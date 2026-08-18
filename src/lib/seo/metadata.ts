@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { siteConfig, defaultMetadata, categoryMetadata } from "./config";
+import { generateBreadcrumbSchema } from "./structured-data";
 
 interface Product {
   id: string;

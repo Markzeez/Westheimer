@@ -1,0 +1,41 @@
+{
+  "name": "FurniStore",
+  "short_name": "FurniStore",
+  "description": "Premium furniture for modern living. Handcrafted quality, sustainable materials.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping", "lifestyle", "home"],
+  "shortcuts": [
+    {
+      "name": "Shop",
+      "short_name": "Shop",
+      "description": "Browse furniture",
+      "url": "/shop",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Cart",
+      "short_name": "Cart",
+      "description": "View cart",
+      "url": "/cart",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

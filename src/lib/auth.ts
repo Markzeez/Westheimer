@@ -1,8 +1,8 @@
-import type { NextAuthConfig } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { createSupabaseServerClient } from "@/lib/supabase";
+import { createSupabaseServerClient } from "./supabase";
 
-export const authOptions: NextAuthConfig = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -68,4 +68,4 @@ export const authOptions: NextAuthConfig = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET || "your-super-secret-key-change-in-production",
-};
+});
