@@ -1,3 +1,6 @@
+import { v2 as cloudinary, UploadApiErrorResponse, UploadApiResponse } from 'cloudinary';
+import crypto from 'crypto';
+
 // Cloudinary Configuration
 export const cloudinaryConfig = {
   cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
@@ -16,7 +19,7 @@ export const isCloudinaryConfigured = () => {
 
 // Generate Cloudinary upload signature
 export function generateSignature(params: Record<string, string>) {
-  const crypto = require('crypto');
+  // import crypto from "crypto";
   const sortedParams = Object.keys(params)
     .sort()
     .map(key => `${key}=${params[key]}`)
@@ -27,12 +30,28 @@ export function generateSignature(params: Record<string, string>) {
 }
 
 // Upload image to Cloudinary
+type CloudinaryTransformation = Record<string, string | number | boolean>;
+type CloudinaryUploadOptions = {
+  folder: string;
+  resource_type: 'image' | 'video' | 'raw' | 'auto';
+  transformation: CloudinaryTransformation[];
+  public_id?: string;
+};
+type CloudinaryUploadResult = {
+  secure_url: string;
+  public_id: string;
+  width: number;
+  height: number;
+  format: string;
+  bytes: number;
+};
+
 export async function uploadToCloudinary(
   file: Buffer | string,
   options: {
     folder?: string;
     publicId?: string;
-    transformation?: Record<string, any>;
+    transformation?: CloudinaryTransformation | CloudinaryTransformation[];
     resourceType?: 'image' | 'video' | 'raw' | 'auto';
   } = {}
 ) {
@@ -40,7 +59,7 @@ export async function uploadToCloudinary(
     throw new Error('Cloudinary not configured. Please add CLOUDINARY_* env variables.');
   }
 
-  const { v2: cloudinary } = require('cloudinary');
+  // const { v2: cloudinary } = require('cloudinary');
   
   cloudinary.config({
     cloud_name: cloudinaryConfig.cloudName,
@@ -48,13 +67,17 @@ export async function uploadToCloudinary(
     api_secret: cloudinaryConfig.apiSecret,
   });
 
-  const uploadOptions: any = {
+  const uploadOptions: CloudinaryUploadOptions = {
     folder: options.folder || 'furnistore/products',
     resource_type: options.resourceType || 'image',
-    transformation: options.transformation || [
-      { width: 1200, height: 900, crop: 'limit', quality: 'auto' },
-      { fetch_format: 'auto' },
-    ],
+    transformation: Array.isArray(options.transformation)
+      ? options.transformation
+      : options.transformation
+        ? [options.transformation]
+        : [
+            { width: 1200, height: 900, crop: 'limit', quality: 'auto' },
+            { fetch_format: 'auto' },
+          ],
   };
 
   if (options.publicId) {
@@ -62,13 +85,20 @@ export async function uploadToCloudinary(
   }
 
   try {
-    let result;
+    let result: {
+      secure_url: string;
+      public_id: string;
+      width: number;
+      height: number;
+      format: string;
+      bytes: number;
+    };
     if (Buffer.isBuffer(file)) {
       // Upload from buffer
       result = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(uploadOptions, (error: any, result: any) => {
+        const uploadStream = cloudinary.uploader.upload_stream(uploadOptions, (error: UploadApiErrorResponse | undefined, uploadResult?: UploadApiResponse) => {
           if (error) reject(error);
-          else resolve(result);
+          else resolve(uploadResult as UploadApiResponse);
         });
         uploadStream.end(file);
       });
@@ -114,7 +144,7 @@ export async function uploadMultipleToCloudinary(
 export async function deleteFromCloudinary(publicId: string) {
   if (!isCloudinaryConfigured()) return false;
 
-  const { v2: cloudinary } = require('cloudinary');
+  // const { v2: cloudinary } = require('cloudinary');
   cloudinary.config({
     cloud_name: cloudinaryConfig.cloudName,
     api_key: cloudinaryConfig.apiKey,
@@ -134,13 +164,13 @@ export async function deleteFromCloudinary(publicId: string) {
 export function getOptimizedUrl(publicId: string, options: {
   width?: number;
   height?: number;
-  crop?: 'fill' | 'scale' | 'fit' | 'thumb';
+  crop?: 'fill' | 'scale' | 'fit' | 'thumb' | 'limit';
   quality?: 'auto' | number;
   format?: 'auto' | 'webp' | 'jpg' | 'png';
 } = {}) {
   if (!isCloudinaryConfigured()) return '';
 
-  const { v2: cloudinary } = require('cloudinary');
+  // const { v2: cloudinary } = require('cloudinary');
   
   return cloudinary.url(publicId, {
     secure: true,

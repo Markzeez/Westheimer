@@ -3,6 +3,7 @@ import { ChevronRight, Truck, Shield, RotateCcw, Star, Users, Package, Heart, Aw
 import Link from 'next/link';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
+import { motion } from "framer-motion";
 
 export const metadata: Metadata = {
   title: 'About Us - FurniStore',

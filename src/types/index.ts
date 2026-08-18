@@ -44,6 +44,7 @@ export interface ProductDimensions {
   unit: 'cm' | 'inch';
 }
 
+// Unified Product Interface (Database standard)
 export interface Product {
   id: string;
   name: string;
@@ -54,15 +55,22 @@ export interface Product {
   images: ProductImage[];
   inventory: number;
   ratings: number;
-  review_count: number;
   features: string[];
   dimensions?: ProductDimensions;
   material?: string;
   color?: string;
-  is_active: boolean;
-  is_featured: boolean;
   created_at: string;
   updated_at: string;
+  
+  // Database fields (snake_case)
+  review_count: number;
+  is_active: boolean;
+  is_featured: boolean;
+
+  // Frontend UI Compatibility fields (camelCase optional fallbacks)
+  reviewCount?: number;
+  isActive?: boolean;
+  isFeatured?: boolean;
 }
 
 export interface ProductInsert {

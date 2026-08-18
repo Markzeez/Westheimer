@@ -9,6 +9,9 @@ import { Mail, MapPin, Phone, Clock, Send, MessageSquare, Truck, Shield, RotateC
 import { toast } from '@/components/ToastProvider';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
+import Link from "next/link";
+import { AnimatePresence } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -324,7 +327,7 @@ export default function ContactPage() {
                         <CheckCircle className="w-8 h-8 text-green-600" />
                       </div>
                       <h3 className="text-2xl font-bold text-gray-900 mb-2">Message Sent!</h3>
-                      <p className="text-gray-600 mb-8">Thank you for reaching out. We\'ll get back to you within 24 hours.</p>
+                      <p className="text-gray-600 mb-8">Thank you for reaching out. We\&apos;ll get back to you within 24 hours.</p>
                       <button
                         onClick={() => setShowSuccess(false)}
                         className="px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700 font-medium"

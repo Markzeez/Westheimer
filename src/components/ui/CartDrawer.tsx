@@ -17,6 +17,7 @@ export function CartDrawer() {
   };
 
   return (
+    <>
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -163,6 +164,7 @@ export function CartDrawer() {
         </motion.aside>
       )}
     </AnimatePresence>
+    </>
   );
 }
 
