@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
-import Product from '@/models/Product';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/options';
+import { auth } from '@/lib/auth';
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { uploadMultipleToCloudinary, deleteFromCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary';
 
 export async function GET(
@@ -10,12 +8,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await connectDB();
     const { id } = await params;
+    const supabase = createSupabaseServerClient();
 
-    const product = await Product.findById(id).lean();
+    const { data: product, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (!product) {
+    if (error || !product) {
       return NextResponse.json(
         { success: false, error: 'Product not found' },
         { status: 404 }
@@ -40,7 +42,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || (session.user as any).role !== 'admin') {
       return NextResponse.json(
@@ -49,14 +51,12 @@ export async function PUT(
       );
     }
 
-    await connectDB();
     const { id } = await params;
-
     const formData = await request.formData();
     
     const updateData: any = {};
     
-    const fields = ['name', 'description', 'price', 'category', 'subCategory', 'inventory', 'material', 'color'];
+    const fields = ['name', 'description', 'price', 'category', 'sub_category', 'inventory', 'material', 'color'];
     fields.forEach(field => {
       const value = formData.get(field);
       if (value !== null) {
@@ -66,7 +66,7 @@ export async function PUT(
       }
     });
 
-    const booleanFields = ['isActive', 'isFeatured'];
+    const booleanFields = ['is_active', 'is_featured'];
     booleanFields.forEach(field => {
       const value = formData.get(field);
       if (value !== null) {
@@ -85,17 +85,24 @@ export async function PUT(
     // Handle new images - upload to Cloudinary if configured
     const imageFiles = formData.getAll('images') as File[];
     if (imageFiles.length > 0 && imageFiles[0].size > 0) {
-      if (isCloudinaryConfigured()) {
-        // Delete old images from Cloudinary
-        const existingProduct = await Product.findById(id).lean();
-        if (existingProduct?.images) {
-          for (const img of existingProduct.images) {
-            if (img.publicId) {
-              await deleteFromCloudinary(img.publicId);
-            }
+      const supabaseAdmin = createSupabaseAdminClient();
+      
+      // Delete old images from Cloudinary
+      const { data: existingProduct } = await supabaseAdmin
+        .from('products')
+        .select('images')
+        .eq('id', id)
+        .single();
+      
+      if (existingProduct?.images && isCloudinaryConfigured()) {
+        for (const img of existingProduct.images) {
+          if (img.publicId) {
+            await deleteFromCloudinary(img.publicId);
           }
         }
+      }
 
+      if (isCloudinaryConfigured()) {
         // Upload new images
         const buffers = await Promise.all(
           imageFiles.map(async (file) => {
@@ -130,11 +137,16 @@ export async function PUT(
       }
     }
 
-    const product = await Product.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true, runValidators: true }
-    ).lean();
+    const supabaseAdmin = createSupabaseAdminClient();
+
+    const { data: product, error } = await supabaseAdmin
+      .from('products')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
 
     if (!product) {
       return NextResponse.json(
@@ -161,7 +173,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || (session.user as any).role !== 'admin') {
       return NextResponse.json(
@@ -170,12 +182,17 @@ export async function DELETE(
       );
     }
 
-    await connectDB();
     const { id } = await params;
+    const supabaseAdmin = createSupabaseAdminClient();
 
     // Delete images from Cloudinary before deleting product
     if (isCloudinaryConfigured()) {
-      const product = await Product.findById(id).lean();
+      const { data: product } = await supabaseAdmin
+        .from('products')
+        .select('images')
+        .eq('id', id)
+        .single();
+      
       if (product?.images) {
         for (const img of product.images) {
           if (img.publicId) {
@@ -185,14 +202,12 @@ export async function DELETE(
       }
     }
 
-    const product = await Product.findByIdAndDelete(id);
+    const { error } = await supabaseAdmin
+      .from('products')
+      .delete()
+      .eq('id', id);
 
-    if (!product) {
-      return NextResponse.json(
-        { success: false, error: 'Product not found' },
-        { status: 404 }
-      );
-    }
+    if (error) throw error;
 
     return NextResponse.json({
       success: true,

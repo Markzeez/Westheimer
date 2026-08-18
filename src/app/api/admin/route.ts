@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
-import Order from '@/models/Order';
-import Product from '@/models/Product';
-import User from '@/models/User';
-import Payment from '@/models/Payment';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || (session.user as any).role !== 'admin') {
       return NextResponse.json(
@@ -18,99 +13,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    await connectDB();
-
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'stats';
 
+    const supabaseAdmin = createSupabaseAdminClient();
+
     if (type === 'stats') {
-      // Get dashboard statistics
-      const [
-        totalUsers,
-        totalProducts,
-        totalOrders,
-        totalRevenue,
-        ordersByStatus,
-        recentOrders,
-        lowStockProducts,
-        topProducts
-      ] = await Promise.all([
-        User.countDocuments(),
-        Product.countDocuments(),
-        Order.countDocuments(),
-        Order.aggregate([
-          { $match: { status: { $ne: 'cancelled' } } },
-          { $group: { _id: null, total: { $sum: '$total' } } }
-        ]),
-        Order.aggregate([
-          { $group: { _id: '$status', count: { $sum: 1 } } }
-        ]),
-        Order.find()
-          .sort({ createdAt: -1 })
-          .limit(10)
-          .populate('userId', 'name email')
-          .lean(),
-        Product.find({ inventory: { $lte: 10, $gt: 0 }, isActive: true })
-          .sort({ inventory: 1 })
-          .limit(10)
-          .lean(),
-        Order.aggregate([
-          { $match: { status: { $ne: 'cancelled' } } },
-          { $unwind: '$items' },
-          { $group: { _id: '$items.productId', sales: { $sum: '$items.quantity' }, revenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } } } },
-          { $sort: { sales: -1 } },
-          { $limit: 10 },
-          { $lookup: { from: 'products', localField: '_id', foreignField: '_id', as: 'product' } },
-          { $unwind: '$product' },
-          { $project: { _id: 1, name: '$product.name', sales: 1, revenue: 1 } }
-        ])
-      ]);
-
-      // Revenue by month (last 12 months)
-      const twelveMonthsAgo = new Date();
-      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-
-      const revenueByMonth = await Order.aggregate([
-        { 
-          $match: { 
-            status: { $ne: 'cancelled' },
-            createdAt: { $gte: twelveMonthsAgo }
-          } 
-        },
-        {
-          $group: {
-            _id: { 
-              year: { $year: '$createdAt' },
-              month: { $month: '$createdAt' }
-            },
-            revenue: { $sum: '$total' }
-          }
-        },
-        { $sort: { '_id.year': 1, '_id.month': 1 } }
-      ]);
-
-      const formattedRevenueByMonth = revenueByMonth.map(item => ({
-        month: `${item._id.year}-${String(item._id.month).padStart(2, '0')}`,
-        revenue: item.revenue
-      }));
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          totalUsers,
-          totalProducts,
-          totalOrders,
-          totalRevenue: totalRevenue[0]?.total || 0,
-          ordersByStatus: ordersByStatus.reduce((acc, item) => {
-            acc[item._id] = item.count;
-            return acc;
-          }, {} as Record<string, number>),
-          recentOrders,
-          lowStockProducts,
-          topProducts,
-          revenueByMonth: formattedRevenueByMonth
-        }
-      });
+      const stats = await (await import('@/lib/supabase-admin')).dbAdmin.getDashboardStats();
+      return NextResponse.json({ success: true, data: stats });
     }
 
     if (type === 'users') {
@@ -119,36 +29,33 @@ export async function GET(request: NextRequest) {
       const search = searchParams.get('search');
       const role = searchParams.get('role');
 
-      const skip = (page - 1) * limit;
-      const query: any = {};
+      const { data, error, count } = await supabaseAdmin
+        .from('users')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range((page - 1) * limit, page * limit - 1);
 
+      // Apply filters manually since we can't easily do ILIKE with range
+      let filteredData = data || [];
       if (search) {
-        query.$or = [
-          { name: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } }
-        ];
+        filteredData = filteredData.filter(u => 
+          u.name.toLowerCase().includes(search.toLowerCase()) ||
+          u.email.toLowerCase().includes(search.toLowerCase())
+        );
       }
-      if (role) query.role = role;
-
-      const [users, total] = await Promise.all([
-        User.find(query)
-          .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .select('-password')
-          .lean(),
-        User.countDocuments(query)
-      ]);
+      if (role) {
+        filteredData = filteredData.filter(u => u.role === role);
+      }
 
       return NextResponse.json({
         success: true,
-        data: users,
+        data: filteredData,
         pagination: {
           page,
           limit,
-          total,
-          totalPages: Math.ceil(total / limit)
-        }
+          total: count || 0,
+          totalPages: Math.ceil((count || 0) / limit),
+        },
       });
     }
 
@@ -157,30 +64,30 @@ export async function GET(request: NextRequest) {
       const limit = parseInt(searchParams.get('limit') || '20');
       const status = searchParams.get('status');
 
-      const skip = (page - 1) * limit;
-      const query: any = {};
+      let query = supabaseAdmin
+        .from('orders')
+        .select(`
+          *,
+          user:users(name, email)
+        `, { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range((page - 1) * limit, page * limit - 1);
 
-      if (status) query.status = status;
+      if (status) query = query.eq('status', status);
 
-      const [orders, total] = await Promise.all([
-        Order.find(query)
-          .sort({ createdAt: -1 })
-          .skip(skip)
-          .limit(limit)
-          .populate('userId', 'name email')
-          .lean(),
-        Order.countDocuments(query)
-      ]);
+      const { data, error, count } = await query;
+
+      if (error) throw error;
 
       return NextResponse.json({
         success: true,
-        data: orders,
+        data: data || [],
         pagination: {
           page,
           limit,
-          total,
-          totalPages: Math.ceil(total / limit)
-        }
+          total: count || 0,
+          totalPages: Math.ceil((count || 0) / limit),
+        },
       });
     }
 

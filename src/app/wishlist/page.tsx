@@ -40,7 +40,6 @@ export default function WishlistPage() {
           </div>
 
           {items.length === 0 ? (
-            {/* Empty Wishlist */}
             <div className="text-center py-20">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -49,7 +48,7 @@ export default function WishlistPage() {
               >
                 <Heart className="w-24 h-24 text-gray-300 mx-auto mb-6" />
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Your wishlist is empty</h2>
-                <p className="text-gray-500 mb-8">Save items you love for later. They'll be waiting here when you're ready.</p>
+                <p className="text-gray-500 mb-8">Save items you love for later. They&apos;ll be waiting here when you&apos;re ready.</p>
                 <Link href="/shop" className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
                   <Package className="w-5 h-5" />
                   Start Shopping
@@ -138,7 +137,7 @@ export default function WishlistPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <h3 className="font-semibold text-gray-900">Share Your Wishlist</h3>
-                    <p className="text-gray-500 text-sm mt-1">Let others know what you'd love to receive</p>
+                    <p className="text-gray-500 text-sm mt-1">Let others know what you&apos;d love to receive</p>
                   </div>
                   <div className="flex gap-3">
                     <button className="px-4 py-2 bg-gray-900 text-white rounded-xl hover:bg-gray-800 text-sm font-medium flex items-center gap-2">

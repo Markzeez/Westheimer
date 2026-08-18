@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
-import User from '@/models/User';
-import bcrypt from 'bcryptjs';
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
-
     const body = await request.json();
     const { name, email, password, address } = body;
 
@@ -25,35 +21,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'An account with this email already exists' },
-        { status: 400 }
-      );
+    const supabaseAdmin = createSupabaseAdminClient();
+
+    // Create user in Supabase Auth
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: email.toLowerCase().trim(),
+      password,
+      email_confirm: true,
+      user_metadata: {
+        name: name.trim(),
+      },
+    });
+
+    if (authError) {
+      if (authError.message.includes('already registered')) {
+        return NextResponse.json(
+          { error: 'An account with this email already exists' },
+          { status: 400 }
+        );
+      }
+      throw authError;
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // Create user profile in public.users table
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('users')
+      .insert({
+        id: authData.user.id,
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        address: address?.trim() || '',
+        role: 'user',
+      })
+      .select()
+      .single();
 
-    // Create user
-    const user = await User.create({
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
-      password: hashedPassword,
-      address: address?.trim() || '',
-      role: 'user',
-    });
+    if (profileError) throw profileError;
 
     return NextResponse.json({
       success: true,
       message: 'Account created successfully',
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        role: profile.role,
       }
     }, { status: 201 });
   } catch (error) {

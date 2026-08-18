@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
-import Product from '@/models/Product';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/options';
-import { uploadMultipleToCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary';
+import { auth } from '@/lib/auth';
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase';
+import { isCloudinaryConfigured, uploadMultipleToCloudinary, deleteFromCloudinary } from '@/lib/cloudinary';
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
-
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
@@ -16,59 +12,49 @@ export async function GET(request: NextRequest) {
     const subCategory = searchParams.get('subCategory');
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
-    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortBy = searchParams.get('sortBy') || 'created_at';
     const sortOrder = searchParams.get('sortOrder') || 'desc';
     const search = searchParams.get('search');
     const isFeatured = searchParams.get('isFeatured');
     const isActive = searchParams.get('isActive') !== 'false';
     const inStock = searchParams.get('inStock');
 
-    const skip = (page - 1) * limit;
+    const supabase = createSupabaseServerClient();
 
-    // Build query
-    const query: any = { isActive };
+    let query = supabase
+      .from('products')
+      .select('*', { count: 'exact' })
+      .eq('is_active', isActive)
+      .order(sortBy, { ascending: sortOrder === 'asc' })
+      .range((page - 1) * limit, page * limit - 1);
 
-    if (category) query.category = category;
-    if (subCategory) query.subCategory = subCategory;
-    if (isFeatured === 'true') query.isFeatured = true;
+    if (category) query = query.eq('category', category);
+    if (subCategory) query = query.eq('sub_category', subCategory);
+    if (isFeatured === 'true') query = query.eq('is_featured', true);
+    if (inStock === 'true') query = query.gt('inventory', 0);
     
     if (minPrice || maxPrice) {
-      query.price = {};
-      if (minPrice) query.price.$gte = parseFloat(minPrice);
-      if (maxPrice) query.price.$lte = parseFloat(maxPrice);
-    }
-
-    if (inStock === 'true') {
-      query.inventory = { $gt: 0 };
+      if (minPrice) query = query.gte('price', parseFloat(minPrice));
+      if (maxPrice) query = query.lte('price', parseFloat(maxPrice));
     }
 
     if (search) {
-      query.$text = { $search: search };
+      query = query.textSearch('name,description', search);
     }
 
-    // Build sort
-    const sort: any = {};
-    sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    const { data, error, count } = await query;
 
-    // Execute queries
-    const [products, total] = await Promise.all([
-      Product.find(query)
-        .sort(sort)
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Product.countDocuments(query)
-    ]);
+    if (error) throw error;
 
     return NextResponse.json({
       success: true,
-      data: products,
+      data: data || [],
       pagination: {
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit)
-      }
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
+      },
     });
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -81,7 +67,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || (session.user as any).role !== 'admin') {
       return NextResponse.json(
@@ -89,8 +75,6 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    await connectDB();
 
     const formData = await request.formData();
     
@@ -113,7 +97,6 @@ export async function POST(request: NextRequest) {
     
     if (imageFiles.length > 0 && imageFiles[0].size > 0) {
       if (isCloudinaryConfigured()) {
-        // Convert files to buffers and upload to Cloudinary
         const buffers = await Promise.all(
           imageFiles.map(async (file) => {
             const arrayBuffer = await file.arrayBuffer();
@@ -156,21 +139,29 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const product = await Product.create({
-      name,
-      description,
-      price,
-      category,
-      subCategory,
-      inventory,
-      features,
-      dimensions,
-      material,
-      color,
-      isActive,
-      isFeatured,
-      images
-    });
+    const supabaseAdmin = createSupabaseAdminClient();
+
+    const { data: product, error } = await supabaseAdmin
+      .from('products')
+      .insert({
+        name,
+        description,
+        price,
+        category,
+        sub_category: subCategory,
+        images,
+        inventory,
+        features,
+        dimensions,
+        material,
+        color,
+        is_active: isActive,
+        is_featured: isFeatured,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({
       success: true,

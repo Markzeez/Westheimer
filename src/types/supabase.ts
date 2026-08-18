@@ -1,4 +1,4 @@
-// Supabase-based Types
+import { PostgrestError } from '@supabase/supabase-js';
 
 // User Types
 export interface User {
@@ -207,7 +207,7 @@ export interface WishlistItem {
 // API Response Types
 export interface ApiResponse<T> {
   data?: T;
-  error?: Error | string;
+  error?: PostgrestError | Error | string;
   count?: number;
 }
 

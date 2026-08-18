@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
-import User from '@/models/User';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import bcrypt from 'bcryptjs';
+import { auth } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || (session.user as any).role !== 'admin') {
       return NextResponse.json(
@@ -19,12 +16,16 @@ export async function GET(
       );
     }
 
-    await connectDB();
     const { id } = await params;
+    const supabaseAdmin = createSupabaseAdminClient();
 
-    const user = await User.findById(id).select('-password').lean();
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-    if (!user) {
+    if (error || !user) {
       return NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }
@@ -49,7 +50,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || (session.user as any).role !== 'admin') {
       return NextResponse.json(
@@ -58,23 +59,32 @@ export async function PUT(
       );
     }
 
-    await connectDB();
     const { id } = await params;
-
     const body = await request.json();
     const { name, email, address, role, password } = body;
+
+    const supabaseAdmin = createSupabaseAdminClient();
 
     const updateData: any = { name, email, address, role };
 
     if (password) {
-      updateData.password = await bcrypt.hash(password, 12);
+      // Update password in Supabase Auth
+      const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(id, {
+        password,
+      });
+      if (authError) {
+        console.error('Auth password update error:', authError);
+      }
     }
 
-    const user = await User.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true, runValidators: true }
-    ).select('-password').lean();
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
 
     if (!user) {
       return NextResponse.json(
@@ -101,7 +111,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || (session.user as any).role !== 'admin') {
       return NextResponse.json(
@@ -110,7 +120,6 @@ export async function DELETE(
       );
     }
 
-    await connectDB();
     const { id } = await params;
 
     // Prevent admin from deleting themselves
@@ -121,14 +130,21 @@ export async function DELETE(
       );
     }
 
-    const user = await User.findByIdAndDelete(id);
+    const supabaseAdmin = createSupabaseAdminClient();
 
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
+    // Delete from Supabase Auth
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id);
+    if (authError) {
+      console.error('Auth delete error:', authError);
     }
+
+    // Delete from users table (cascade will handle related data)
+    const { error } = await supabaseAdmin
+      .from('users')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
 
     return NextResponse.json({
       success: true,

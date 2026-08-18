@@ -1,11 +1,6 @@
 import NextAuth from "next-auth";
-import * as optionsModule from "./options";
+import { authOptions } from "@/lib/auth";
 
-const authOptions: Parameters<typeof NextAuth>[0] =
-  ("authOptions" in optionsModule && optionsModule.authOptions
-    ? optionsModule.authOptions
-    : {
-        providers: [],
-      }) as Parameters<typeof NextAuth>[0];
+const { handlers } = NextAuth(authOptions);
 
-export const { handlers, signIn, signOut, auth } = NextAuth(authOptions);
+export const { GET, POST } = handlers;

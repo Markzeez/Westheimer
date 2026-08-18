@@ -1,16 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
-import Order from '@/models/Order';
-import Product from '@/models/Product';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/lib/auth';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || (session.user as any).role !== 'admin') {
       return NextResponse.json(
@@ -19,15 +16,20 @@ export async function GET(
       );
     }
 
-    await connectDB();
     const { id } = await params;
+    const supabaseAdmin = createSupabaseAdminClient();
 
-    const order = await Order.findById(id)
-      .populate('userId', 'name email address')
-      .populate('items.productId', 'name images inventory')
-      .lean();
+    const { data: order, error } = await supabaseAdmin
+      .from('orders')
+      .select(`
+        *,
+        user:users(name, email, address),
+        items:order_items(*, product:products(name, images, inventory))
+      `)
+      .eq('id', id)
+      .single();
 
-    if (!order) {
+    if (error || !order) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
@@ -52,7 +54,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session || (session.user as any).role !== 'admin') {
       return NextResponse.json(
@@ -61,9 +63,7 @@ export async function PUT(
       );
     }
 
-    await connectDB();
     const { id } = await params;
-
     const body = await request.json();
     const { status, trackingNumber, notes } = body;
 
@@ -75,8 +75,15 @@ export async function PUT(
       );
     }
 
-    const order = await Order.findById(id);
-    if (!order) {
+    const supabaseAdmin = createSupabaseAdminClient();
+
+    const { data: order, error: fetchError } = await supabaseAdmin
+      .from('orders')
+      .select('*, items:order_items(*)')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !order) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
@@ -88,18 +95,32 @@ export async function PUT(
     if ((status === 'cancelled' || status === 'refunded') && 
         !['cancelled', 'refunded'].includes(oldStatus)) {
       // Restore inventory
-      for (const item of order.items) {
-        await Product.findByIdAndUpdate(item.productId, {
-          $inc: { inventory: item.quantity }
-        });
+      for (const item of order.items || []) {
+        const { data: product } = await supabaseAdmin
+          .from('products')
+          .select('inventory')
+          .eq('id', item.product_id)
+          .single();
+        
+        if (product) {
+          await supabaseAdmin
+            .from('products')
+            .update({ inventory: product.inventory + item.quantity })
+            .eq('id', item.product_id);
+        }
       }
     }
 
     // If order was cancelled/refunded and now being reactivated, reduce inventory
     if (['cancelled', 'refunded'].includes(oldStatus) && 
         !['cancelled', 'refunded'].includes(status || oldStatus)) {
-      for (const item of order.items) {
-        const product = await Product.findById(item.productId);
+      for (const item of order.items || []) {
+        const { data: product } = await supabaseAdmin
+          .from('products')
+          .select('inventory')
+          .eq('id', item.product_id)
+          .single();
+        
         if (product && product.inventory < item.quantity) {
           return NextResponse.json(
             { success: false, error: `Insufficient inventory for ${item.name}` },
@@ -108,26 +129,31 @@ export async function PUT(
         }
       }
       // Reduce inventory
-      for (const item of order.items) {
-        await Product.findByIdAndUpdate(item.productId, {
-          $inc: { inventory: -item.quantity }
-        });
+      for (const item of order.items || []) {
+        await supabaseAdmin
+          .from('products')
+          .update({ inventory: product.inventory - item.quantity })
+          .eq('id', item.product_id);
       }
     }
 
     const updateData: any = {};
     if (status) updateData.status = status;
-    if (trackingNumber) updateData.trackingNumber = trackingNumber;
+    if (trackingNumber) updateData.tracking_number = trackingNumber;
     if (notes) updateData.notes = notes;
 
-    const updatedOrder = await Order.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true, runValidators: true }
-    )
-      .populate('userId', 'name email')
-      .populate('items.productId', 'name images')
-      .lean();
+    const { data: updatedOrder, error } = await supabaseAdmin
+      .from('orders')
+      .update(updateData)
+      .eq('id', id)
+      .select(`
+        *,
+        user:users(name, email),
+        items:order_items(*, product:products(name, images))
+      `)
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json({
       success: true,

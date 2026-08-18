@@ -33,7 +33,6 @@ export default function CartPage() {
           </div>
 
           {items.length === 0 ? (
-            {/* Empty Cart */}
             <div className="text-center py-20">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -44,7 +43,7 @@ export default function CartPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h2>
-                <p className="text-gray-500 mb-8">Looks like you haven't added any furniture to your cart yet.</p>
+                <p className="text-gray-500 mb-8">Looks like you haven&apos;t added any furniture to your cart yet.</p>
                 <Link href="/shop" className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-xl hover:bg-primary-700 transition-colors">
                   <ArrowLeft className="w-5 h-5" />
                   Continue Shopping

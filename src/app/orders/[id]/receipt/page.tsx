@@ -1,8 +1,7 @@
 import { notFound } from 'next/navigation';
 import connectDB from '@/lib/db';
 import Order from '@/models/Order';
-import getServerSession from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { auth } from '@/app/api/auth/[...nextauth]/options';
 
 interface OrderData {
   _id: string;
@@ -398,4 +397,18 @@ export default async function ReceiptPage({
       </body>
     </html>
   );
+}
+
+async function getServerSession(authOptions: any) {
+  if (!authOptions) {
+    return null;
+  }
+
+  try {
+    const { getServerSession: nextAuthGetServerSession } = await import('next-auth');
+    return await nextAuthGetServerSession(authOptions);
+  } catch {
+    const { getServerSession: nextAuthGetServerSession } = await import('next-auth/next');
+    return await nextAuthGetServerSession(authOptions);
+  }
 }
