@@ -1,14 +1,11 @@
-import { Metadata } from 'next';
-import { ChevronRight, Truck, Shield, RotateCcw, Star, Users, Package, Heart, Award } from 'lucide-react';
+'use client';
+
+import { ChevronRight, Truck, Shield, RotateCcw, Star, Package, Heart, Award } from 'lucide-react';
 import Link from 'next/link';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
-import { motion } from "framer-motion";
-
-export const metadata: Metadata = {
-  title: 'About Us - FurniStore',
-  description: 'Learn about FurniStore - premium furniture for modern living. Our story, values, and commitment to quality.',
-};
+import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const values = [
   { icon: Heart, title: 'Quality First', desc: 'Every piece is crafted with premium materials and attention to detail.' },
@@ -18,10 +15,30 @@ const values = [
 ];
 
 const team = [
-  { name: 'Sarah Chen', role: 'Founder & CEO', bio: 'Former interior designer with 15+ years experience in luxury furniture.' },
-  { name: 'Marcus Johnson', role: 'Head of Design', bio: 'Award-winning furniture designer passionate about sustainable materials.' },
-  { name: 'Emily Rodriguez', role: 'Operations Director', bio: 'Supply chain expert ensuring quality from factory to your door.' },
-  { name: 'David Kim', role: 'Customer Experience', bio: 'Dedicated to making every interaction delightful and stress-free.' },
+  { 
+    name: 'Sarah Chen', 
+    role: 'Founder & CEO', 
+    bio: 'Former interior designer with 15+ years experience in luxury furniture.',
+    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face' 
+  },
+  { 
+    name: 'Marcus Johnson', 
+    role: 'Head of Design', 
+    bio: 'Award-winning furniture designer passionate about sustainable materials.',
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face' 
+  },
+  { 
+    name: 'Emily Rodriguez', 
+    role: 'Operations Director', 
+    bio: 'Supply chain expert ensuring quality from factory to your door.',
+    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face' 
+  },
+  { 
+    name: 'David Kim', 
+    role: 'Customer Experience', 
+    bio: 'Dedicated to making every interaction delightful and stress-free.',
+    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face' 
+  },
 ];
 
 const milestones = [
@@ -31,6 +48,12 @@ const milestones = [
   { year: '2022', title: 'Showroom Opening', desc: 'Opened our first physical showroom in NYC.' },
   { year: '2023', title: '100K Customers', desc: 'Reached 100,000 happy customers milestone.' },
   { year: '2024', title: 'Global Expansion', desc: 'Now shipping to Canada, UK, and Australia.' },
+];
+
+const promises = [
+  { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500, delivered to your room of choice' },
+  { icon: Shield, title: 'Lifetime Warranty', desc: 'Frames guaranteed for life, 5 years on cushions' },
+  { icon: RotateCcw, title: '100-Day Trial', desc: 'Live with it. Love it. Or return it, no questions.' },
 ];
 
 export default function AboutPage() {
@@ -69,20 +92,20 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Mission & Values */}
+        {/* Mission & Philosophy */}
         <section className="py-20 lg:py-32 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               <div>
                 <span className="text-primary-600 font-medium text-sm uppercase tracking-wide">Our Philosophy</span>
                 <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-2 mb-6">Design with Purpose, Build with Integrity</h2>
-                <div className="space-y-6">
-                  <p className="text-gray-600 leading-relaxed text-lg">
+                <div className="space-y-6 text-gray-600 leading-relaxed text-lg">
+                  <p>
                     We believe your home should be a sanctuary—a place where every piece tells a story 
                     and serves a purpose. That&apos;s why we obsess over every detail, from the sustainably 
                     sourced wood to the hand-stitched upholstery.
                   </p>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-base">
                     Unlike mass-produced furniture, our pieces are made in small batches by skilled artisans 
                     who take pride in their craft. We visit every factory, test every material, and stand 
                     behind every product with a lifetime warranty on frames.
@@ -94,17 +117,18 @@ export default function AboutPage() {
                 </Link>
               </div>
               <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop"
-                  alt="Our workshop"
-                  className="w-full h-full object-cover"
+                  alt="Our workshop craftsmanship"
+                  fill
+                  className="object-cover"
                 />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Values */}
+        {/* Core Values */}
         <section className="py-20 lg:py-32 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
@@ -141,7 +165,7 @@ export default function AboutPage() {
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-2 mb-4">Milestones</h2>
             </div>
             <div className="relative">
-              <div className="absolute left-8 top-0 bottom-0 w-1 bg-gray-200" />
+              <div className="absolute left-8 top-0 bottom-0 w-1 bg-gray-200 hidden sm:block" />
               <div className="space-y-12">
                 {milestones.map((milestone, index) => (
                   <motion.div
@@ -150,19 +174,15 @@ export default function AboutPage() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
-                    className="relative pl-20"
+                    className="relative sm:pl-20"
                   >
-                    <div className="absolute left-4 top-2 w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-sm z-10">
+                    <div className="hidden sm:flex absolute left-4 top-2 w-8 h-8 bg-primary-600 rounded-full items-center justify-center text-white font-bold text-sm z-10">
                       {index + 1}
                     </div>
                     <div className="bg-gray-50 rounded-2xl p-6 lg:p-8">
-                      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div>
-                          <span className="text-primary-600 font-bold text-lg">{milestone.year}</span>
-                          <h3 className="text-xl font-semibold text-gray-900 mt-1">{milestone.title}</h3>
-                          <p className="text-gray-600 mt-2">{milestone.desc}</p>
-                        </div>
-                      </div>
+                      <span className="text-primary-600 font-bold text-lg">{milestone.year}</span>
+                      <h3 className="text-xl font-semibold text-gray-900 mt-1">{milestone.title}</h3>
+                      <p className="text-gray-600 mt-2">{milestone.desc}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -171,12 +191,12 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Team */}
+        {/* Team Section */}
         <section className="py-20 lg:py-32 bg-gray-900">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <span className="text-primary-400 font-medium text-sm uppercase tracking-wide">Meet the Team</span>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mt-2 mb-4">The People Behind FurniStore</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mt-2 mb-4">The People Behind Westheimer Designs</h2>
               <p className="text-gray-400 text-lg">Passionate individuals dedicated to your comfort</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -190,10 +210,11 @@ export default function AboutPage() {
                   className="text-center"
                 >
                   <div className="relative aspect-square rounded-2xl overflow-hidden mb-6">
-                    <img
-                      src={`https://images.unsplash.com/photo-1${47 + index}0?w=400&h=400&fit=crop&crop=face`}
+                    <Image
+                      src={member.image}
                       alt={member.name}
-                      className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
+                      fill
+                      className="object-cover grayscale hover:grayscale-0 transition-all duration-500"
                     />
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-1">{member.name}</h3>
@@ -209,11 +230,7 @@ export default function AboutPage() {
         <section className="py-20 lg:py-32 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-3 gap-8 text-center">
-              {[
-                { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500, delivered to your room of choice' },
-                { icon: Shield, title: 'Lifetime Warranty', desc: 'Frames guaranteed for life, 5 years on cushions' },
-                { icon: RotateCcw, title: '100-Day Trial', desc: 'Live with it. Love it. Or return it, no questions.' },
-              ].map((promise, index) => (
+              {promises.map((promise, index) => (
                 <motion.div
                   key={promise.title}
                   initial={{ opacity: 0, y: 20 }}
@@ -233,14 +250,14 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* CTA */}
+        {/* Call to Action */}
         <section className="py-20 lg:py-32 bg-primary-600">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
               Ready to Transform Your Space?
             </h2>
             <p className="text-primary-100 text-lg mb-10 max-w-2xl mx-auto">
-              Join over 100,000 customers who&apos;ve made their house a home with FurniStore.
+              Join over 100,000 customers who&apos;ve made their house a home with Westheimer Designs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/shop" className="px-8 py-4 bg-white text-primary-600 font-semibold rounded-xl hover:bg-primary-50 transition-colors">

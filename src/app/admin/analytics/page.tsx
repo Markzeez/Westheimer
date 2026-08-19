@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  DollarSign, ShoppingCart, Users, Package, TrendingUp, ArrowUpRight, ArrowDownRight,
-  BarChart3, Calendar, ChevronLeft, ChevronRight
-} from 'lucide-react';
+  DollarSign, ShoppingCart, Users, TrendingUp, Calendar} from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, Legend, AreaChart, Area

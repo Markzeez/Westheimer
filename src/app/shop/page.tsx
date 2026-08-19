@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "furniture sale",
   ],
   openGraph: {
-    title: "Shop All Furniture | FurniStore",
+    title: "Shop All Furniture | Westheimer Designs",
     description: "Browse our complete collection of premium furniture. Filter by category, price, style, and more.",
     url: `${siteConfig.url}/shop`,
     siteName: siteConfig.name,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Shop All Furniture | FurniStore",
+    title: "Shop All Furniture | Westheimer Designs",
     description: "Browse our complete collection of premium furniture.",
     images: [siteConfig.ogImage],
   },

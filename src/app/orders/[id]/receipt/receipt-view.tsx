@@ -202,7 +202,7 @@ export default function ReceiptView({ order, id, userEmail }: ReceiptViewProps) 
       <button className="no-print print-btn" onClick={() => window.print()}>
         Print / Save as PDF
       </button>
-      <div className="watermark">FurniStore</div>
+      <div className="watermark">Westheimer Designs</div>
 
       <div className="receipt-container">
         <header className="header">
@@ -211,7 +211,7 @@ export default function ReceiptView({ order, id, userEmail }: ReceiptViewProps) 
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
-          <h1 className="company-name">FurniStore</h1>
+          <h1 className="company-name">Westheimer Designs</h1>
           <p className="tagline">Premium Furniture for Modern Living</p>
           <div className="receipt-title">Official Receipt</div>
         </header>
@@ -312,9 +312,9 @@ export default function ReceiptView({ order, id, userEmail }: ReceiptViewProps) 
         </main>
 
         <footer className="footer">
-          <p style={{ fontWeight: '600', color: '#374151', marginBottom: '8px' }}>Thank you for shopping with FurniStore!</p>
-          <p>123 Furniture Ave, Design District, NY 10001</p>
-          <p>support@furnistore.com | +1 (555) 123-4567</p>
+          <p style={{ fontWeight: '600', color: '#374151', marginBottom: '8px' }}>Thank you for shopping with Westheimer Designs!</p>
+          <p>123 Westheimer Rd, Design District, NY 10001</p>
+          <p>support@westheimerdesigns.com | +1 (555) 123-4567</p>
           <div className="contact">
             <a href="/contact">Contact Us</a> • <a href="/returns">Returns & Exchanges</a> • <a href="/privacy">Privacy Policy</a>
           </div>

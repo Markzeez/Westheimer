@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const files = formData.getAll('images') as File[];
-    const folder = formData.get('folder') as string || 'furnistore/products';
+    const folder = formData.get('folder') as string || 'westheimer/products';
 
     if (!files.length || files[0].size === 0) {
       return NextResponse.json(

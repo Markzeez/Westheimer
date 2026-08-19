@@ -2,120 +2,471 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, Edit, Trash2, Shield, User, MoreVertical, X, Mail, MapPin, Phone } from 'lucide-react';
-import { StatusBadge, ActionButtons, DataTable, AdminLayout } from '@/components/admin/AdminLayout';
+import { Search, Plus, Trash2, X } from 'lucide-react';
 
-interface User {
+import {
+  StatusBadge,
+  ActionButtons,
+  DataTable,
+  AdminLayout,
+} from '@/components/admin/AdminLayout';
+
+interface AdminUser {
   _id: string;
   name: string;
   email: string;
   address?: string;
   role: 'user' | 'admin';
   createdAt: string;
-  orderHistory: string[];
+  orderHistory?: string[];
+}
+
+interface UserForm {
+  name: string;
+  email: string;
+  address: string;
+  role: 'user' | 'admin';
+  password: string;
+}
+
+interface UsersResponse {
+  data?: AdminUser[];
+  pagination?: {
+    totalPages?: number;
+    page?: number;
+    limit?: number;
+    total?: number;
+  };
+  error?: string;
+  message?: string;
 }
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [filterRole, setFilterRole] = useState('');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    name: '', email: '', address: '', role: 'user' as 'user' | 'admin', password: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const [search, setSearch] = useState<string>('');
+  const [filterRole, setFilterRole] = useState<
+    '' | 'user' | 'admin'
+  >('');
+
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const [form, setForm] = useState<UserForm>({
+    name: '',
+    email: '',
+    address: '',
+    role: 'user',
+    password: '',
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  /**
+   * Fetch users
+   */
   const fetchUsers = useCallback(async () => {
     try {
       setIsLoading(true);
-      const params = new URLSearchParams({ page: String(page), limit: '20' });
-      if (search) params.set('search', search);
-      if (filterRole) params.set('role', filterRole);
-      const res = await fetch(`/api/admin?type=users&${params}`);
-      const json = await res.json();
-      setUsers(json.data || []);
-      setTotalPages(json.pagination?.totalPages || 1);
-    } catch { console.error('Failed to fetch users'); }
-    finally { setIsLoading(false); }
+
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: '20',
+      });
+
+      if (search.trim()) {
+        params.set('search', search.trim());
+      }
+
+      if (filterRole) {
+        params.set('role', filterRole);
+      }
+
+      const response = await fetch(
+        `/api/admin?type=users&${params.toString()}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-store',
+        }
+      );
+
+      let json: UsersResponse = {};
+
+      try {
+        json = await response.json();
+      } catch {
+        json = {};
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          json.error || json.message || 'Failed to fetch users'
+        );
+      }
+
+      setUsers(Array.isArray(json.data) ? json.data : []);
+
+      setTotalPages(
+        Math.max(1, json.pagination?.totalPages ?? 1)
+      );
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      setUsers([]);
+      setTotalPages(1);
+    } finally {
+      setIsLoading(false);
+    }
   }, [page, search, filterRole]);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  useEffect(() => {
+    void fetchUsers();
+  }, [fetchUsers]);
 
-  const resetForm = () => { setForm({ name: '', email: '', address: '', role: 'user', password: '' }); setEditingUser(null); };
+  /**
+   * Reset form
+   */
+  const resetForm = useCallback(() => {
+    setForm({
+      name: '',
+      email: '',
+      address: '',
+      role: 'user',
+      password: '',
+    });
 
-  const openCreateModal = () => { resetForm(); setShowModal(true); };
+    setEditingUser(null);
+  }, []);
 
-  const openEditModal = (user: User) => {
-    setEditingUser(user);
-    setForm({ name: user.name, email: user.email, address: user.address || '', role: user.role, password: '' });
+  /**
+   * Open create modal
+   */
+  const openCreateModal = () => {
+    resetForm();
     setShowModal(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setIsSubmitting(true);
+  /**
+   * Open edit modal
+   */
+  const openEditModal = (user: AdminUser) => {
+    setEditingUser(user);
+
+    setForm({
+      name: user.name ?? '',
+      email: user.email ?? '',
+      address: user.address ?? '',
+      role: user.role ?? 'user',
+      password: '',
+    });
+
+    setShowModal(true);
+  };
+
+  /**
+   * Close modal
+   */
+  const closeModal = () => {
+    if (isSubmitting) return;
+
+    setShowModal(false);
+    resetForm();
+  };
+
+  /**
+   * Handle form field changes
+   */
+  const updateForm = <K extends keyof UserForm>(
+    field: K,
+    value: UserForm[K]
+  ) => {
+    setForm((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
+
+  /**
+   * Create / update user
+   */
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    if (isSubmitting) return;
+
     try {
-      const data = { ...form };
-      if (!data.password) delete data.password;
-      const url = editingUser ? `/api/admin/users/${editingUser._id}` : '/api/admin/users';
+      setIsSubmitting(true);
+
+      const payload: {
+        name: string;
+        email: string;
+        address: string;
+        role: 'user' | 'admin';
+        password?: string;
+      } = {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        address: form.address.trim(),
+        role: form.role,
+      };
+
+      if (form.password.trim()) {
+        payload.password = form.password;
+      }
+
+      if (!payload.name) {
+        throw new Error('Name is required');
+      }
+
+      if (!payload.email) {
+        throw new Error('Email is required');
+      }
+
+      if (!editingUser && !form.password.trim()) {
+        throw new Error('Password is required');
+      }
+
+      if (form.password && form.password.length < 8) {
+        throw new Error('Password must be at least 8 characters');
+      }
+
+      const url = editingUser
+        ? `/api/admin/users/${editingUser._id}`
+        : '/api/admin/users';
+
       const method = editingUser ? 'PUT' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-      if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Failed to save user'); }
-      setShowModal(false); resetForm(); fetchUsers();
-    } catch (err) { alert(err instanceof Error ? err.message : 'Failed to save user'); }
-    finally { setIsSubmitting(false); }
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      let result: {
+        error?: string;
+        message?: string;
+      } = {};
+
+      try {
+        result = await response.json();
+      } catch {
+        result = {};
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            result.message ||
+            'Failed to save user'
+        );
+      }
+
+      setShowModal(false);
+      resetForm();
+
+      await fetchUsers();
+    } catch (error) {
+      console.error('Failed to save user:', error);
+
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : 'Failed to save user'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
+  /**
+   * Delete user
+   */
   const handleDelete = async (userId: string) => {
-    try { const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' }); if (!res.ok) throw new Error('Failed'); setDeleteConfirm(null); fetchUsers(); }
-    catch { alert('Failed to delete user'); }
+    if (!userId) return;
+
+    try {
+      const response = await fetch(
+        `/api/admin/users/${userId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      let result: {
+        error?: string;
+        message?: string;
+      } = {};
+
+      try {
+        result = await response.json();
+      } catch {
+        result = {};
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            result.message ||
+            'Failed to delete user'
+        );
+      }
+
+      setDeleteConfirm(null);
+
+      await fetchUsers();
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete user'
+      );
+    }
   };
 
+  /**
+   * Table columns
+   */
   const columns = [
-    { key: 'name', header: 'Name', render: (u: User) => <div><p className="font-medium">{u.name}</p><p className="text-xs text-gray-500">{u.email}</p></div> },
-    { key: 'role', header: 'Role', render: (u: User) => <StatusBadge status={u.role} /> },
-    { key: 'address', header: 'Address', render: (u: User) => <span className="text-sm text-gray-500 truncate max-w-[200px] block">{u.address || '—'}</span> },
-    { key: 'orders', header: 'Orders', render: (u: User) => <span className="text-sm text-gray-500">{u.orderHistory.length}</span> },
-    { key: 'createdAt', header: 'Joined', render: (u: User) => <span className="text-sm text-gray-500">{new Date(u.createdAt).toLocaleDateString()}</span> },
+    {
+      key: 'name',
+      header: 'Name',
+      render: (user: AdminUser) => (
+        <div className="min-w-0">
+          <p className="font-medium text-gray-900 truncate">
+            {user.name || 'Unnamed User'}
+          </p>
+
+          <p className="text-xs text-gray-500 truncate">
+            {user.email}
+          </p>
+        </div>
+      ),
+    },
+
+    {
+      key: 'role',
+      header: 'Role',
+      render: (user: AdminUser) => (
+        <StatusBadge status={user.role} />
+      ),
+    },
+
+    {
+      key: 'address',
+      header: 'Address',
+      render: (user: AdminUser) => (
+        <span className="block max-w-[200px] truncate text-sm text-gray-500">
+          {user.address || '—'}
+        </span>
+      ),
+    },
+
+    {
+      key: 'orders',
+      header: 'Orders',
+      render: (user: AdminUser) => (
+        <span className="text-sm text-gray-500">
+          {user.orderHistory?.length ?? 0}
+        </span>
+      ),
+    },
+
+    {
+      key: 'createdAt',
+      header: 'Joined',
+      render: (user: AdminUser) => (
+        <span className="text-sm text-gray-500">
+          {user.createdAt
+            ? new Date(user.createdAt).toLocaleDateString()
+            : '—'}
+        </span>
+      ),
+    },
   ];
 
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage customer accounts and admin users.</p>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Users
+            </h1>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Manage customer accounts and admin users.
+            </p>
           </div>
-          <button onClick={openCreateModal} className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-medium">
-            <Plus className="w-4 h-4" /> Add User
+
+          <button
+            type="button"
+            onClick={openCreateModal}
+            className="flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-700"
+          >
+            <Plus className="h-4 w-4" />
+            Add User
           </button>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+        {/* Search / Filter */}
+        <div className="flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input type="text" placeholder="Search users..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500" />
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+
+            <input
+              type="text"
+              placeholder="Search users..."
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+              className="w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-4 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+            />
           </div>
-          <select value={filterRole} onChange={(e) => { setFilterRole(e.target.value); setPage(1); }} className="px-4 py-2.5 border border-gray-300 rounded-lg text-sm">
+
+          <select
+            value={filterRole}
+            onChange={(event) => {
+              setFilterRole(
+                event.target.value as '' | 'user' | 'admin'
+              );
+              setPage(1);
+            }}
+            className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+          >
             <option value="">All Roles</option>
             <option value="user">Customer</option>
             <option value="admin">Admin</option>
           </select>
         </div>
 
+        {/* Users Table */}
         <DataTable
           columns={columns}
           data={users}
-          keyExtractor={(u) => u._id}
+          keyExtractor={(user: AdminUser) => user._id}
           isLoading={isLoading}
           emptyMessage="No users found"
           onRowClick={openEditModal}
-          actions={(user) => (
+          actions={(user: AdminUser) => (
             <div className="flex items-center justify-end gap-1">
               <ActionButtons
                 onEdit={() => openEditModal(user)}
@@ -123,45 +474,253 @@ export default function AdminUsersPage() {
               />
             </div>
           )}
-          pagination={{ page, totalPages, onPageChange: setPage }}
+          pagination={{
+            page,
+            totalPages,
+            onPageChange: setPage,
+          }}
         />
 
-        {/* User Form Modal */}
+        {/* Create / Edit User Modal */}
         <AnimatePresence>
           {showModal && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">{editingUser ? 'Edit User' : 'Add New User'}</h2>
-                  <button onClick={() => { setShowModal(false); resetForm(); }} className="p-2 text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+              onClick={(event) => {
+                if (event.target === event.currentTarget) {
+                  closeModal();
+                }
+              }}
+            >
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  scale: 0.95,
+                  y: 10,
+                }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.95,
+                  y: 10,
+                }}
+                transition={{ duration: 0.2 }}
+                className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-2xl"
+                onClick={(event) => event.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div className="mb-5 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {editingUser
+                        ? 'Edit User'
+                        : 'Add New User'}
+                    </h2>
+
+                    <p className="mt-1 text-xs text-gray-500">
+                      {editingUser
+                        ? 'Update this user account.'
+                        : 'Create a new user account.'}
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    disabled={isSubmitting}
+                    className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Close modal"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
                 </div>
-                <form onSubmit={handleSubmit} className="space-y-4">
+
+                {/* Form */}
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-4"
+                >
+                  {/* Name */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                    <input required value={form.name} onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500" />
+                    <label
+                      htmlFor="user-name"
+                      className="mb-1 block text-sm font-medium text-gray-700"
+                    >
+                      Name *
+                    </label>
+
+                    <input
+                      id="user-name"
+                      type="text"
+                      required
+                      autoComplete="name"
+                      value={form.name}
+                      onChange={(event) =>
+                        updateForm(
+                          'name',
+                          event.target.value
+                        )
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                      placeholder="John Doe"
+                    />
                   </div>
+
+                  {/* Email */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                    <input required type="email" value={form.email} onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500" />
+                    <label
+                      htmlFor="user-email"
+                      className="mb-1 block text-sm font-medium text-gray-700"
+                    >
+                      Email *
+                    </label>
+
+                    <input
+                      id="user-email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      value={form.email}
+                      onChange={(event) =>
+                        updateForm(
+                          'email',
+                          event.target.value
+                        )
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                      placeholder="john@example.com"
+                    />
                   </div>
+
+                  {/* Password */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{editingUser ? 'New Password (leave blank to keep current)' : 'Password *'} *</label>
-                    <input type="password" value={form.password} onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500" placeholder={editingUser ? '••••••••' : 'Min 8 characters'} />
+                    <label
+                      htmlFor="user-password"
+                      className="mb-1 block text-sm font-medium text-gray-700"
+                    >
+                      {editingUser
+                        ? 'New Password'
+                        : 'Password *'}
+                    </label>
+
+                    <input
+                      id="user-password"
+                      type="password"
+                      required={!editingUser}
+                      minLength={8}
+                      autoComplete={
+                        editingUser
+                          ? 'new-password'
+                          : 'new-password'
+                      }
+                      value={form.password}
+                      onChange={(event) =>
+                        updateForm(
+                          'password',
+                          event.target.value
+                        )
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                      placeholder={
+                        editingUser
+                          ? 'Leave blank to keep current password'
+                          : 'Minimum 8 characters'
+                      }
+                    />
+
+                    {editingUser && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Leave blank if you do not want to
+                        change the password.
+                      </p>
+                    )}
                   </div>
+
+                  {/* Address */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                    <textarea rows={2} value={form.address} onChange={(e) => setForm(prev => ({ ...prev, address: e.target.value }))} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500" />
+                    <label
+                      htmlFor="user-address"
+                      className="mb-1 block text-sm font-medium text-gray-700"
+                    >
+                      Address
+                    </label>
+
+                    <textarea
+                      id="user-address"
+                      rows={3}
+                      value={form.address}
+                      onChange={(event) =>
+                        updateForm(
+                          'address',
+                          event.target.value
+                        )
+                      }
+                      className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2.5 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                      placeholder="Enter user's address"
+                    />
                   </div>
+
+                  {/* Role */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-                    <select value={form.role} onChange={(e) => setForm(prev => ({ ...prev, role: e.target.value as 'user' | 'admin' }))} className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500">
-                      <option value="user">Customer</option>
-                      <option value="admin">Admin</option>
+                    <label
+                      htmlFor="user-role"
+                      className="mb-1 block text-sm font-medium text-gray-700"
+                    >
+                      Role *
+                    </label>
+
+                    <select
+                      id="user-role"
+                      required
+                      value={form.role}
+                      onChange={(event) =>
+                        updateForm(
+                          'role',
+                          event.target.value as
+                            | 'user'
+                            | 'admin'
+                        )
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-3 py-2.5 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                    >
+                      <option value="user">
+                        Customer
+                      </option>
+                      <option value="admin">
+                        Admin
+                      </option>
                     </select>
                   </div>
-                  <div className="flex justify-end gap-3 pt-4">
-                    <button type="button" onClick={() => { setShowModal(false); resetForm(); }} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
-                    <button disabled={isSubmitting} className="px-6 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50">{isSubmitting ? 'Saving...' : editingUser ? 'Update User' : 'Create User'}</button>
+
+                  {/* Actions */}
+                  <div className="flex justify-end gap-3 border-t border-gray-100 pt-5">
+                    <button
+                      type="button"
+                      onClick={closeModal}
+                      disabled={isSubmitting}
+                      className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isSubmitting
+                        ? 'Saving...'
+                        : editingUser
+                        ? 'Update User'
+                        : 'Create User'}
+                    </button>
                   </div>
                 </form>
               </motion.div>
@@ -169,18 +728,69 @@ export default function AdminUsersPage() {
           )}
         </AnimatePresence>
 
-        {/* Delete Confirmation */}
+        {/* Delete Confirmation Modal */}
         <AnimatePresence>
           {deleteConfirm && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setDeleteConfirm(null)}>
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+              onClick={() => setDeleteConfirm(null)}
+            >
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  scale: 0.95,
+                  y: 10,
+                }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  y: 0,
+                }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.95,
+                  y: 10,
+                }}
+                transition={{ duration: 0.2 }}
+                className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"
+                onClick={(event) => event.stopPropagation()}
+              >
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><Trash2 className="w-6 h-6 text-red-600" /></div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete User?</h3>
-                  <p className="text-sm text-gray-500 mb-6">This action cannot be undone. The user account will be permanently removed.</p>
+                  {/* Icon */}
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                    <Trash2 className="h-6 w-6 text-red-600" />
+                  </div>
+
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                    Delete User?
+                  </h3>
+
+                  <p className="mb-6 text-sm leading-6 text-gray-500">
+                    This action cannot be undone. The user
+                    account will be permanently removed.
+                  </p>
+
                   <div className="flex gap-3">
-                    <button onClick={() => setDeleteConfirm(null)} className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
-                    <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">Delete</button>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirm(null)}
+                      className="flex-1 rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-200"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void handleDelete(deleteConfirm)
+                      }
+                      className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </motion.div>

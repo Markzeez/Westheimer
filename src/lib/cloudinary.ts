@@ -6,7 +6,7 @@ export const cloudinaryConfig = {
   cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
   apiKey: process.env.CLOUDINARY_API_KEY || '',
   apiSecret: process.env.CLOUDINARY_API_SECRET || '',
-  uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET || 'furnistore_products',
+  uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET || 'westheimer_products',
 };
 
 export const isCloudinaryConfigured = () => {
@@ -68,7 +68,7 @@ export async function uploadToCloudinary(
   });
 
   const uploadOptions: CloudinaryUploadOptions = {
-    folder: options.folder || 'furnistore/products',
+    folder: options.folder || 'westheimer/products',
     resource_type: options.resourceType || 'image',
     transformation: Array.isArray(options.transformation)
       ? options.transformation
@@ -124,7 +124,7 @@ export async function uploadToCloudinary(
 // Upload multiple images
 export async function uploadMultipleToCloudinary(
   files: (Buffer | string)[],
-  folder: string = 'furnistore/products'
+  folder: string = 'westheimer/products'
 ) {
   const results = [];
   for (let i = 0; i < files.length; i++) {

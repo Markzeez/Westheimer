@@ -188,7 +188,7 @@ export default function ContactPage() {
                   <div className="space-y-6 mb-8">
                     {[
                       { icon: MapPin, title: 'Showroom', lines: ['123 Furniture Ave', 'Design District, NY 10001'], link: 'https://maps.google.com' },
-                      { icon: Mail, title: 'Email', lines: ['support@furnistore.com', 'business@furnistore.com'], link: 'mailto:support@furnistore.com' },
+                      { icon: Mail, title: 'Email', lines: ['support@westheimerdesigns.com', 'business@westheimerdesigns.com'], link: 'mailto:support@westheimerdesigns.com' },
                       { icon: Phone, title: 'Phone', lines: ['+1 (555) 123-4567', 'Mon-Fri 9am-6pm EST'], link: 'tel:+15551234567' },
                       { icon: Clock, title: 'Hours', lines: ['Mon-Fri: 9am - 6pm', 'Sat: 10am - 4pm', 'Sun: Closed'], link: null },
                     ].map((item, index) => (

@@ -1,6 +1,4 @@
 import { PostgrestError } from '@supabase/supabase-js';
-
-// User Types
 export interface User {
   id: string;
   name: string;
@@ -29,7 +27,10 @@ export interface UserUpdate {
   role?: 'user' | 'admin';
 }
 
+// ============================================
 // Product Types
+// ============================================
+
 export interface ProductImage {
   url: string;
   publicId?: string;
@@ -81,10 +82,19 @@ export interface ProductInsert {
   is_featured?: boolean;
 }
 
-export interface ProductUpdate extends Partial<ProductInsert> {}
+export type ProductUpdate = Partial<ProductInsert>;
 
+// ============================================
 // Order Types
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+// ============================================
+
+export type OrderStatus =
+  | 'pending'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'refunded';
 
 export interface ShippingAddress {
   name: string;
@@ -139,7 +149,10 @@ export interface OrderUpdate {
   notes?: string;
 }
 
+// ============================================
 // Review Types
+// ============================================
+
 export interface Review {
   id: string;
   user_id: string;
@@ -163,7 +176,10 @@ export interface ReviewInsert {
   is_verified_purchase?: boolean;
 }
 
+// ============================================
 // Cart Types
+// ============================================
+
 export interface CartItem {
   product_id: string;
   name: string;
@@ -179,9 +195,21 @@ export interface Cart {
   updated_at: string;
 }
 
+// ============================================
 // Payment Types
-export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
-export type PaymentMethod = 'stripe' | 'paypal' | 'cod' | 'bank_transfer';
+// ============================================
+
+export type PaymentStatus =
+  | 'pending'
+  | 'completed'
+  | 'failed'
+  | 'refunded';
+
+export type PaymentMethod =
+  | 'stripe'
+  | 'paypal'
+  | 'cod'
+  | 'bank_transfer';
 
 export interface Payment {
   id: string;
@@ -190,12 +218,19 @@ export interface Payment {
   status: PaymentStatus;
   method: PaymentMethod;
   transaction_id: string;
-  metadata: Record<string, any>;
+
+  // Changed from Record<string, any>
+  // to Record<string, unknown> to satisfy ESLint
+  metadata: Record<string, unknown>;
+
   created_at: string;
   updated_at: string;
 }
 
+// ============================================
 // Wishlist Types
+// ============================================
+
 export interface WishlistItem {
   id: string;
   user_id: string;
@@ -204,7 +239,10 @@ export interface WishlistItem {
   product?: Product;
 }
 
+// ============================================
 // API Response Types
+// ============================================
+
 export interface ApiResponse<T> {
   data?: T;
   error?: PostgrestError | Error | string;
@@ -219,20 +257,39 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
+// ============================================
 // Admin Dashboard Types
+// ============================================
+
 export interface DashboardStats {
   totalUsers: number;
   totalProducts: number;
   totalOrders: number;
   totalRevenue: number;
+
   ordersByStatus: Record<string, number>;
+
   recentOrders: Order[];
+
   lowStockProducts: Product[];
-  topProducts: { id: string; name: string; sales: number; revenue: number }[];
-  revenueByMonth: { month: string; revenue: number }[];
+
+  topProducts: {
+    id: string;
+    name: string;
+    sales: number;
+    revenue: number;
+  }[];
+
+  revenueByMonth: {
+    month: string;
+    revenue: number;
+  }[];
 }
 
+// ============================================
 // Form Types
+// ============================================
+
 export interface ContactFormData {
   name: string;
   email: string;

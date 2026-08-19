@@ -77,10 +77,10 @@ NEXTAUTH_URL=http://localhost:3000
 CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
-CLOUDINARY_UPLOAD_PRESET=furnistore_products
+CLOUDINARY_UPLOAD_PRESET=westheimer_products
 
 # Site URL (for sitemap/canonical)
-NEXT_PUBLIC_SITE_URL=https://furnistore.com
+NEXT_PUBLIC_SITE_URL=https://westheimerdesigns.com
 ```
 
 ## 🚀 To Deploy

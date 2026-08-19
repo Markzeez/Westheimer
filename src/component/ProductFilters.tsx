@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, X, ChevronDown, ChevronUp, SlidersHorizontal, Tag, DollarSign, Star, Truck } from 'lucide-react';
+import { Filter, X, SlidersHorizontal, Tag, DollarSign, Star, Truck } from 'lucide-react';
 
 const categories = [
   { value: 'living-room', label: 'Living Room', count: 42 },
@@ -30,47 +30,49 @@ const sortOptions = [
   { value: 'rating', label: 'Top Rated' },
 ];
 
-interface ProductFiltersProps {
-  onFilterChange?: (filters: any) => void;
+interface FilterState {
+  category: string;
+  priceRange: string;
+  inStock: boolean;
+  featured: boolean;
+  onSale: boolean;
+  rating: number;
+  sortBy: string;
 }
+
+type FilterKey = keyof FilterState;
+type FilterValue = FilterState[FilterKey];
+
+interface ProductFiltersProps {
+  onFilterChange?: (filters: FilterState) => void;
+}
+
+const defaultFilters: FilterState = {
+  category: '',
+  priceRange: '',
+  inStock: false,
+  featured: false,
+  onSale: false,
+  rating: 0,
+  sortBy: 'default',
+};
 
 export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
-  
-  const [filters, setFilters] = useState({
-    category: '',
-    priceRange: '',
-    inStock: false,
-    featured: false,
-    onSale: false,
-    rating: 0,
-    sortBy: 'default',
-  });
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
 
   const activeFilterCount = Object.values(filters).filter(v => v !== '' && v !== false && v !== 0 && v !== 'default').length;
 
-  const handleFilterChange = (key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+  const handleFilterChange = <K extends FilterKey>(key: K, value: FilterState[K]) => {
+    const updated = { ...filters, [key]: value };
+    setFilters(updated);
     if (onFilterChange) {
-      onFilterChange({ ...filters, [key]: value });
+      onFilterChange(updated);
     }
   };
 
   const clearFilters = () => {
-    setFilters({
-      category: '',
-      priceRange: '',
-      inStock: false,
-      featured: false,
-      onSale: false,
-      rating: 0,
-      sortBy: 'default',
-    });
-  };
-
-  const toggleCategoryExpand = (category: string) => {
-    setExpandedCategories(prev => ({ ...prev, [category]: !prev[category] }));
+    setFilters(defaultFilters);
   };
 
   return (
@@ -191,15 +193,17 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
               Options
             </h4>
             <div className="space-y-2">
-              {[
-                { key: 'inStock', label: 'In Stock Only', icon: Truck },
-                { key: 'featured', label: 'Featured Products', icon: Star },
-                { key: 'onSale', label: 'On Sale', icon: Tag },
-              ].map((opt) => (
+              {(
+                [
+                  { key: 'inStock', label: 'In Stock Only', icon: Truck },
+                  { key: 'featured', label: 'Featured Products', icon: Star },
+                  { key: 'onSale', label: 'On Sale', icon: Tag },
+                ] as const
+              ).map((opt) => (
                 <label key={opt.key} className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={filters[opt.key as keyof typeof filters]}
+                    checked={filters[opt.key] as boolean}
                     onChange={(e) => handleFilterChange(opt.key, e.target.checked)}
                     className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                   />
@@ -344,15 +348,17 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                     <Filter className="w-4 h-4 text-gray-500" /> Options
                   </h4>
                   <div className="space-y-2">
-                    {[
-                      { key: 'inStock', label: 'In Stock Only', icon: Truck },
-                      { key: 'featured', label: 'Featured Products', icon: Star },
-                      { key: 'onSale', label: 'On Sale', icon: Tag },
-                    ].map((opt) => (
+                    {(
+                      [
+                        { key: 'inStock', label: 'In Stock Only', icon: Truck },
+                        { key: 'featured', label: 'Featured Products', icon: Star },
+                        { key: 'onSale', label: 'On Sale', icon: Tag },
+                      ] as const
+                    ).map((opt) => (
                       <label key={opt.key} className="flex items-center gap-3 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={filters[opt.key as keyof typeof filters]}
+                          checked={filters[opt.key] as boolean}
                           onChange={(e) => handleFilterChange(opt.key, e.target.checked)}
                           className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
                         />

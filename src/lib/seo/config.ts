@@ -1,18 +1,18 @@
 export const siteConfig = {
-  name: "FurniStore",
+  name: "Westheimer Designs",
   description: "Premium furniture for modern living. Handcrafted quality, sustainable materials, and timeless designs for every room.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "https://furnistore.com",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://westheimerdesigns.com",
   ogImage: "/og-image.jpg",
   links: {
-    twitter: "https://twitter.com/furnistore",
-    facebook: "https://facebook.com/furnistore",
-    instagram: "https://instagram.com/furnistore",
-    pinterest: "https://pinterest.com/furnistore",
+    twitter: "https://twitter.com/westheimerdesigns",
+    facebook: "https://facebook.com/westheimerdesigns",
+    instagram: "https://instagram.com/westheimerdesigns",
+    pinterest: "https://pinterest.com/westheimerdesigns",
   },
   contact: {
-    email: "support@furnistore.com",
+    email: "support@westheimerdesigns.com",
     phone: "+1 (555) 123-4567",
-    address: "123 Furniture Ave, Design District, NY 10001",
+    address: "123 Westheimer Rd, Design District, NY 10001",
   },
   businessHours: {
     weekdays: "9:00 AM - 6:00 PM",
@@ -27,8 +27,8 @@ export const siteConfig = {
 
 export const defaultMetadata = {
   title: {
-    default: "FurniStore - Premium Furniture for Modern Living",
-    template: "%s | FurniStore",
+    default: "Westheimer Designs - Premium Furniture for Modern Living",
+    template: "%s | Westheimer Designs",
   },
   description: siteConfig.description,
   keywords: [
@@ -44,9 +44,9 @@ export const defaultMetadata = {
     "office furniture",
     "outdoor furniture",
   ],
-  authors: [{ name: "FurniStore" }],
-  creator: "FurniStore",
-  publisher: "FurniStore",
+  authors: [{ name: "Westheimer Designs" }],
+  creator: "Westheimer Designs",
+  publisher: "Westheimer Designs",
   robots: {
     index: true,
     follow: true,
@@ -63,23 +63,23 @@ export const defaultMetadata = {
     locale: "en_US",
     url: siteConfig.url,
     siteName: siteConfig.name,
-    title: "FurniStore - Premium Furniture for Modern Living",
+    title: "Westheimer Designs - Premium Furniture for Modern Living",
     description: siteConfig.description,
     images: [
       {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: "FurniStore - Premium Furniture",
+        alt: "Westheimer Designs - Premium Furniture",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FurniStore - Premium Furniture for Modern Living",
+    title: "Westheimer Designs - Premium Furniture for Modern Living",
     description: siteConfig.description,
     images: [siteConfig.ogImage],
-    creator: "@furnistore",
+    creator: "@westheimerdesigns",
   },
   icons: {
     icon: "/favicon.ico",

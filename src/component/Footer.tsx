@@ -38,10 +38,10 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { icon: Facebook, href: '#', label: 'Facebook' },
-  { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Twitter, href: '#', label: 'Twitter' },
-  { icon: Youtube, href: '#', label: 'YouTube' },
+  { icon: Facebook, href: 'https://facebook.com/westheimerdesigns', label: 'Facebook' },
+  { icon: Instagram, href: 'https://instagram.com/westheimerdesigns', label: 'Instagram' },
+  { icon: Twitter, href: 'https://twitter.com/westheimerdesigns', label: 'Twitter' },
+  { icon: Youtube, href: 'https://youtube.com/@westheimerdesigns', label: 'YouTube' },
 ];
 
 const features = [
@@ -85,7 +85,7 @@ export function Footer() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 </div>
-                <span className="text-xl font-bold text-white">FurniStore</span>
+                <span className="text-xl font-bold text-white">Westheimer Designs</span>
               </Link>
               
               <p className="text-gray-400 text-base leading-relaxed max-w-xs">
@@ -195,7 +195,7 @@ export function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-gray-500 text-sm">
-              © 2024 FurniStore. All rights reserved.
+              © 2024 Westheimer Designs. All rights reserved.
             </p>
             
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">

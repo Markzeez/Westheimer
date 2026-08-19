@@ -111,7 +111,7 @@ export async function PUT(
           })
         );
         
-        const cloudinaryResults = await uploadMultipleToCloudinary(buffers, 'furnistore/products');
+        const cloudinaryResults = await uploadMultipleToCloudinary(buffers, 'westheimer/products');
         updateData.images = cloudinaryResults.map((result, i) => ({
           url: result.url,
           publicId: result.publicId,

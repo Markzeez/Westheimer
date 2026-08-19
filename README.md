@@ -1,4 +1,4 @@
-# FurniStore - Furniture E-commerce Platform
+# Westheimer Designs - Furniture E-commerce Platform
 
 A complete Next.js 15 furniture e-commerce application with admin dashboard, built with modern technologies.
 
@@ -76,7 +76,7 @@ npm run dev
 
 1. Create a [Cloudinary account](https://cloudinary.com)
 2. Get your Cloud Name, API Key, and API Secret from Dashboard
-3. Create an **Upload Preset** (unsigned) named `furnistore_products`
+3. Create an **Upload Preset** (unsigned) named `westheimer_products`
 4. Add credentials to `.env.local`
 
 Without Cloudinary, images are stored as base64 (development only).
@@ -105,7 +105,7 @@ NEXTAUTH_URL=http://localhost:3000
 CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
-CLOUDINARY_UPLOAD_PRESET=furnistore_products
+CLOUDINARY_UPLOAD_PRESET=westheimer_products
 ```
 
 ## Project Structure
