@@ -156,7 +156,7 @@ const notificationSettings = [
 
 export default function AccountPage() {
   const { data: session, status, update } = useSession();
-  const router = useRouter();
+  // const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const [orders, setOrders] = useState<Order[]>([]);
@@ -269,7 +269,7 @@ export default function AccountPage() {
        * }
        */
 
-      const currentUser = session.user as ExtendedUser;
+      // const currentUser = session.user as ExtendedUser;
 
       await update({
         name: data.name,

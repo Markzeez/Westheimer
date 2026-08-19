@@ -7,18 +7,8 @@ import {
   Package,
   ShoppingCart,
   DollarSign,
-  TrendingUp,
   AlertTriangle,
-  ArrowUpRight,
-  ArrowDownRight,
-  Eye,
-  Edit,
-  Clock,
-  Truck,
-  CheckCircle,
-  XCircle,
-  Box,
-  RefreshCw,
+  CheckCircle
 } from 'lucide-react';
 import {
   BarChart,
@@ -28,8 +18,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -40,6 +28,18 @@ import {
 import Link from 'next/link';
 import { StatCard, StatusBadge } from '@/components/admin/AdminLayout';
 
+interface Order {
+  _id: string;
+  userId: {
+    _id: string;
+    name: string;
+    email?: string;
+  } | null;
+  total: number;
+  status: string;
+  createdAt: string;
+}
+
 interface DashboardData {
   totalUsers: number;
   totalProducts: number;
@@ -49,7 +49,7 @@ interface DashboardData {
   revenueByMonth: { month: string; revenue: number }[];
   topProducts: { _id: string; name: string; sales: number; revenue: number }[];
   lowStockProducts: { _id: string; name: string; inventory: number }[];
-  recentOrders: any[];
+  recentOrders: Order[];
 }
 
 const CHART_COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe'];
@@ -58,8 +58,10 @@ export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
     fetchDashboardData();
   }, []);
 
@@ -77,7 +79,7 @@ export default function AdminDashboard() {
     }
   };
 
-  if (isLoading) {
+  if (!isMounted || isLoading) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -115,15 +117,6 @@ export default function AdminDashboard() {
       </div>
     );
   }
-
-  const statusColors: Record<string, string> = {
-    pending: 'text-yellow-600',
-    processing: 'text-blue-600',
-    shipped: 'text-purple-600',
-    delivered: 'text-green-600',
-    cancelled: 'text-red-600',
-    refunded: 'text-orange-600',
-  };
 
   const orderStatusData = Object.entries(data.ordersByStatus).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),

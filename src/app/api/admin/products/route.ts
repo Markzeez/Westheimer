@@ -2,18 +2,39 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
+interface AuthUser {
+  role?: string;
+  [key: string]: unknown;
+}
+
+interface BulkActionRequestBody {
+  action: string;
+  productIds: string[];
+  data?: {
+    category?: string;
+    inventory?: number;
+    [key: string]: unknown;
+  };
+}
+
+interface CloudinaryImage {
+  publicId?: string;
+  [key: string]: unknown;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
+    const user = session?.user as AuthUser | undefined;
     
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const body = await request.json();
+    const body: BulkActionRequestBody = await request.json();
     const { action, productIds, data } = body;
 
     if (!action || !productIds || !Array.isArray(productIds)) {
@@ -31,29 +52,29 @@ export async function POST(request: NextRequest) {
       case 'activate':
         result = await supabaseAdmin
           .from('products')
-          .update({ is_active: true })
+          .update({ is_active: true }, { count: 'exact' })
           .in('id', productIds);
         break;
       case 'deactivate':
         result = await supabaseAdmin
           .from('products')
-          .update({ is_active: false })
+          .update({ is_active: false }, { count: 'exact' })
           .in('id', productIds);
         break;
       case 'feature':
         result = await supabaseAdmin
           .from('products')
-          .update({ is_featured: true })
+          .update({ is_featured: true }, { count: 'exact' })
           .in('id', productIds);
         break;
       case 'unfeature':
         result = await supabaseAdmin
           .from('products')
-          .update({ is_featured: false })
+          .update({ is_featured: false }, { count: 'exact' })
           .in('id', productIds);
         break;
-      case 'delete':
-        // Delete images from Cloudinary first
+      case 'delete': {
+        // Wrapped in block scope to avoid lexical declaration overlap
         const { data: products } = await supabaseAdmin
           .from('products')
           .select('images')
@@ -63,8 +84,9 @@ export async function POST(request: NextRequest) {
           const { isCloudinaryConfigured, deleteFromCloudinary } = await import('@/lib/cloudinary');
           if (isCloudinaryConfigured()) {
             for (const product of products) {
-              if (product.images) {
-                for (const img of product.images) {
+              const images = product.images as CloudinaryImage[] | null;
+              if (images) {
+                for (const img of images) {
                   if (img.publicId) {
                     await deleteFromCloudinary(img.publicId);
                   }
@@ -76,9 +98,10 @@ export async function POST(request: NextRequest) {
         
         result = await supabaseAdmin
           .from('products')
-          .delete()
+          .delete({ count: 'exact' })
           .in('id', productIds);
         break;
+      }
       case 'update-category':
         if (!data?.category) {
           return NextResponse.json(
@@ -88,7 +111,7 @@ export async function POST(request: NextRequest) {
         }
         result = await supabaseAdmin
           .from('products')
-          .update({ category: data.category })
+          .update({ category: data.category }, { count: 'exact' })
           .in('id', productIds);
         break;
       case 'update-inventory':
@@ -100,7 +123,7 @@ export async function POST(request: NextRequest) {
         }
         result = await supabaseAdmin
           .from('products')
-          .update({ inventory: data.inventory })
+          .update({ inventory: data.inventory }, { count: 'exact' })
           .in('id', productIds);
         break;
       default:
@@ -116,7 +139,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: {
         matchedCount: productIds.length,
-        modifiedCount: result.count || 0,
+        modifiedCount: result.count ?? 0,
         deletedCount: action === 'delete' ? productIds.length : 0,
       },
     });

@@ -86,6 +86,8 @@ export async function POST(request: NextRequest) {
         phone,
         address,
         role: 'user',
+        onboarding_completed: false,
+        onboarding_data: {},
       })
       .select()
       .single();

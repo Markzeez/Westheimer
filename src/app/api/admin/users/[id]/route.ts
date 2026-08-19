@@ -2,14 +2,29 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
+interface AuthUser {
+  id?: string;
+  role?: string;
+  [key: string]: unknown;
+}
+
+interface UserUpdateBody {
+  name?: string;
+  email?: string;
+  address?: unknown;
+  role?: string;
+  password?: string;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
+    const userSession = session?.user as AuthUser | undefined;
     
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || userSession?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -51,8 +66,9 @@ export async function PUT(
 ) {
   try {
     const session = await auth();
+    const userSession = session?.user as AuthUser | undefined;
     
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || userSession?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -60,12 +76,16 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const body = await request.json();
+    const body: UserUpdateBody = await request.json();
     const { name, email, address, role, password } = body;
 
     const supabaseAdmin = createSupabaseAdminClient();
 
-    const updateData: any = { name, email, address, role };
+    const updateData: Record<string, unknown> = {};
+    if (name !== undefined) updateData.name = name;
+    if (email !== undefined) updateData.email = email;
+    if (address !== undefined) updateData.address = address;
+    if (role !== undefined) updateData.role = role;
 
     if (password) {
       // Update password in Supabase Auth
@@ -112,8 +132,9 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
+    const userSession = session?.user as AuthUser | undefined;
     
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || userSession?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -123,7 +144,7 @@ export async function DELETE(
     const { id } = await params;
 
     // Prevent admin from deleting themselves
-    if (id === (session.user as any).id) {
+    if (userSession?.id && id === userSession.id) {
       return NextResponse.json(
         { success: false, error: 'Cannot delete your own account' },
         { status: 400 }

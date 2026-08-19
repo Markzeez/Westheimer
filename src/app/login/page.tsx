@@ -33,8 +33,19 @@ export default function LoginPage() {
 
       if (result?.error) {
         setFormError('Invalid email or password');
-      } else {
-        router.push(callbackUrl);
+      } else if (result?.ok) {
+        // Check onboarding status after successful login
+        try {
+          const res = await fetch('/api/user/onboarding-status');
+          const data = await res.json();
+          if (data.needsOnboarding) {
+            router.push('/onboarding');
+          } else {
+            router.push(callbackUrl);
+          }
+        } catch {
+          router.push(callbackUrl);
+        }
         router.refresh();
       }
     } catch {

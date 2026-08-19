@@ -63,7 +63,7 @@ export default function RegisterPage() {
 
       setSuccess(true);
       setTimeout(() => {
-        router.push('/login?registered=true');
+        router.push('/onboarding');
       }, 2000);
     } catch {
       setError('An error occurred. Please try again.');

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Eye, Edit, Truck, CheckCircle, XCircle, RotateCcw, MoreVertical, X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { Search, X, Download } from 'lucide-react';
 import { StatusBadge, ActionButtons, DataTable, AdminLayout } from '@/components/admin/AdminLayout';
 
 interface OrderItem {

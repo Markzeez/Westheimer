@@ -2,21 +2,36 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+interface AuthUser {
+  role?: string;
+  [key: string]: unknown;
+}
+
+interface OrderUpdateBody {
+  status?: string;
+  trackingNumber?: string;
+  notes?: string;
+}
+
+interface RouteContext {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const session = await auth();
+    const user = session?.user as AuthUser | undefined;
     
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const { id } = await params;
+    const { id } = await context.params;
     const supabaseAdmin = createSupabaseAdminClient();
 
     const { data: order, error } = await supabaseAdmin
@@ -49,22 +64,20 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const session = await auth();
+    const user = session?.user as AuthUser | undefined;
     
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const { id } = await params;
-    const body = await request.json();
+    const { id } = await context.params;
+    const body: OrderUpdateBody = await request.json();
     const { status, trackingNumber, notes } = body;
 
     const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
@@ -90,11 +103,11 @@ export async function PUT(
       );
     }
 
-    // Handle inventory restoration for cancelled/refunded orders
     const oldStatus = order.status;
+
+    // Handle inventory restoration for cancelled/refunded orders
     if ((status === 'cancelled' || status === 'refunded') && 
         !['cancelled', 'refunded'].includes(oldStatus)) {
-      // Restore inventory
       for (const item of order.items || []) {
         const { data: product } = await supabaseAdmin
           .from('products')
@@ -111,9 +124,9 @@ export async function PUT(
       }
     }
 
-    // If order was cancelled/refunded and now being reactivated, reduce inventory
+    // If order was cancelled/refunded and now being reactivated, reduce inventory safely
     if (['cancelled', 'refunded'].includes(oldStatus) && 
-        !['cancelled', 'refunded'].includes(status || oldStatus)) {
+        status && !['cancelled', 'refunded'].includes(status)) {
       for (const item of order.items || []) {
         const { data: product } = await supabaseAdmin
           .from('products')
@@ -121,28 +134,37 @@ export async function PUT(
           .eq('id', item.product_id)
           .single();
         
-        if (product && product.inventory < item.quantity) {
+        if (!product || product.inventory < item.quantity) {
           return NextResponse.json(
-            { success: false, error: `Insufficient inventory for ${item.name}` },
+            { success: false, error: `Insufficient inventory for item ID ${item.product_id}` },
             { status: 400 }
           );
         }
       }
-      // Reduce inventory
+
+      // Reduce inventory after validating all items have enough stock
       for (const item of order.items || []) {
-        await supabaseAdmin
+        const { data: product } = await supabaseAdmin
           .from('products')
-          .update({ inventory: product.inventory - item.quantity })
-          .eq('id', item.product_id);
+          .select('inventory')
+          .eq('id', item.product_id)
+          .single();
+
+        if (product) {
+          await supabaseAdmin
+            .from('products')
+            .update({ inventory: product.inventory - item.quantity })
+            .eq('id', item.product_id);
+        }
       }
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
     if (trackingNumber) updateData.tracking_number = trackingNumber;
     if (notes) updateData.notes = notes;
 
-    const { data: updatedOrder, error } = await supabaseAdmin
+    const { data: updatedOrder, error: updateError } = await supabaseAdmin
       .from('orders')
       .update(updateData)
       .eq('id', id)
@@ -153,7 +175,7 @@ export async function PUT(
       `)
       .single();
 
-    if (error) throw error;
+    if (updateError) throw updateError;
 
     return NextResponse.json({
       success: true,

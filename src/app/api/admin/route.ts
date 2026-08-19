@@ -2,11 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
+interface AuthUser {
+  role?: string;
+  [key: string]: unknown;
+}
+
+interface UserRecord {
+  name: string;
+  email: string;
+  role: string;
+  [key: string]: unknown;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
+    const user = session?.user as AuthUser | undefined;
     
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || user?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -35,8 +48,10 @@ export async function GET(request: NextRequest) {
         .order('created_at', { ascending: false })
         .range((page - 1) * limit, page * limit - 1);
 
+      if (error) throw error;
+
       // Apply filters manually since we can't easily do ILIKE with range
-      let filteredData = data || [];
+      let filteredData: UserRecord[] = (data as UserRecord[]) || [];
       if (search) {
         filteredData = filteredData.filter(u => 
           u.name.toLowerCase().includes(search.toLowerCase()) ||
