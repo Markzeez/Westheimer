@@ -5,13 +5,13 @@ import { motion } from 'framer-motion';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, Package, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, Package } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
-  const error = searchParams.get('error');
+  const callbackUrl = searchParams?.get('callbackUrl') || '/';
+  const error = searchParams?.get('error');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -167,18 +167,16 @@ export default function LoginPage() {
           </form>
 
           {/* Main Log-in Section Button */}
-          <div className=" border-slate-700 hover:bg-black">
+          <div className="mt-6 pt-6 border-t border-slate-200">
             <button
               type="button"
               onClick={() => {
-                // Trigger the same login action if needed
                 const formElement = document.querySelector('form');
                 if (formElement) formElement.requestSubmit();
               }}
-              className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5  rounded-lg text-sm font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors shadow-xs"
+              className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors shadow-xs"
             >
               <span>Log-in</span>
-              {/* <ArrowRight className="w-4 h-4 text-primary-600" /> */}
             </button>
           </div>
         </div>
