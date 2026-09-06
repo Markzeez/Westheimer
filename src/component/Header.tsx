@@ -90,7 +90,7 @@ export function Header() {
                 {session ? (
                   <>
                     <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                      <User className="w-4 h-4 text-primary-600" />
+                      <User className="w-4 h-4 text-black" />
                     </div>
                     <span className="hidden sm:block font-medium">{session.user?.name || 'Account'}</span>
                     <ChevronDown className="w-4 h-4 text-gray-500" />
@@ -116,7 +116,7 @@ export function Header() {
                       <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Orders</Link>
                       <Link href="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Wishlist</Link>
                       {(session.user as any)?.role === 'admin' && (
-                        <Link href="/admin" className="block px-4 py-2 text-sm text-primary-600 hover:bg-primary-50 font-medium">Admin Dashboard</Link>
+                        <Link href="/admin" className="block px-4 py-2 text-sm text-black hover:bg-primary-50 font-medium">Admin Dashboard</Link>
                       )}
                       <div className="border-t border-gray-100 my-2" />
                       <button

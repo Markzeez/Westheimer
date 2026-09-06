@@ -62,6 +62,7 @@ interface Product {
   reviewCount: number;
   isFeatured?: boolean;
   description?: string;
+  features?: string[];
 }
 
 interface ShopPageData {
@@ -140,6 +141,7 @@ export default async function ShopPage({
       reviewCount: p.reviewCount,
       isFeatured: p.isFeatured,
       description: p.description || '',
+      features: p.features ?? [],
     }))
   );
 
@@ -213,7 +215,7 @@ export default async function ShopPage({
             )}
             <a
               href="/shop"
-              className="ml-2 text-sm text-primary-600 hover:text-primary-700 font-medium"
+              className="ml-2 text-sm text-black hover:text-primary-700 font-medium"
             >
               Clear all
             </a>

@@ -44,7 +44,7 @@ export function HeroSection() {
               className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6"
             >
               Transform Your Space with{' '}
-              <span className="text-primary-600">Premium Furniture</span>
+              <span className="text-black">Premium Furniture</span>
             </motion.h1>
             
             <motion.p
@@ -146,7 +146,7 @@ export function HeroSection() {
                 className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <feature.icon className="w-6 h-6 text-primary-600" />
+                  <feature.icon className="w-6 h-6 text-black" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">{feature.title}</p>

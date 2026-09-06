@@ -412,7 +412,7 @@ export default function AdminProductsPage() {
                     type="checkbox"
                     checked={selectedProducts.includes(product._id)}
                     onChange={() => toggleSelectProduct(product._id)}
-                    className="absolute top-3 left-3 z-10 w-4 h-4 text-primary-600 rounded border-gray-300"
+                    className="absolute top-3 left-3 z-10 w-4 h-4 text-black rounded border-gray-300"
                   />
                   <ProductImageCarousel
                     images={product.images}
@@ -460,7 +460,7 @@ export default function AdminProductsPage() {
                     </button>
                     <button
                       onClick={() => openEditModal(product)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-primary-600 bg-primary-50 rounded-lg hover:bg-primary-100"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-black bg-primary-50 rounded-lg hover:bg-primary-100"
                     >
                       <Edit className="w-3.5 h-3.5" /> Edit
                     </button>
@@ -790,7 +790,7 @@ export default function AdminProductsPage() {
                       type="checkbox"
                       checked={form.isActive}
                       onChange={(e) => setForm((prev) => ({ ...prev, isActive: e.target.checked }))}
-                      className="w-4 h-4 text-primary-600 rounded border-gray-300"
+                      className="w-4 h-4 text-black rounded border-gray-300"
                     />
                     <span className="text-sm text-gray-700">Active</span>
                   </label>
@@ -799,7 +799,7 @@ export default function AdminProductsPage() {
                       type="checkbox"
                       checked={form.isFeatured}
                       onChange={(e) => setForm((prev) => ({ ...prev, isFeatured: e.target.checked }))}
-                      className="w-4 h-4 text-primary-600 rounded border-gray-300"
+                      className="w-4 h-4 text-black rounded border-gray-300"
                     />
                     <span className="text-sm text-gray-700">Featured</span>
                   </label>
@@ -863,7 +863,7 @@ export default function AdminProductsPage() {
                     <p className="text-sm text-gray-500 capitalize">
                       {previewProduct.category.replace('-', ' ')}
                     </p>
-                    <p className="text-3xl font-bold text-primary-600">
+                    <p className="text-3xl font-bold text-black">
                       ${previewProduct.price.toFixed(2)}
                     </p>
                     <div className="flex items-center gap-2">

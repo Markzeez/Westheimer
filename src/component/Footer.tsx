@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Facebook, Instagram, Twitter, Youtube, Mail, Truck, Shield, RotateCcw, Headphones } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Youtube, Mail } from 'lucide-react';
 
 const footerLinks = {
   shop: [
@@ -44,21 +44,21 @@ const socialLinks = [
   { icon: Youtube, href: 'https://youtube.com/@westheimerdesigns', label: 'YouTube' },
 ];
 
-const features = [
-  { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500' },
-  { icon: Shield, title: 'Secure Payment', desc: '100% secure checkout' },
-  { icon: RotateCcw, title: 'Easy Returns', desc: '30-day return policy' },
-  { icon: Headphones, title: '24/7 Support', desc: 'Dedicated customer care' },
-];
+// const features = [
+//   { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500' },
+//   { icon: Shield, title: 'Secure Payment', desc: '100% secure checkout' },
+//   { icon: RotateCcw, title: 'Easy Returns', desc: '30-day return policy' },
+//   { icon: Headphones, title: '24/7 Support', desc: 'Dedicated customer care' },
+// ];
 
 export function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-400">
       {/* Features Bar */}
-      <div className="border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
+      {/* <div className="border-b border-gray-800"> */}
+        {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"> */}
+          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-8"> */}
+            {/* {features.map((feature, index) => (
               <div key={index} className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center flex-shrink-0">
                   <feature.icon className="w-6 h-6 text-primary-400" />
@@ -68,10 +68,10 @@ export function Footer() {
                   <p className="text-sm text-gray-500">{feature.desc}</p>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
+            ))} */}
+          {/* </div> */}
+        {/* </div> */}
+      {/* </div> */}
 
       {/* Main Footer Links */}
       <div className="py-16">
@@ -167,11 +167,11 @@ export function Footer() {
       </div>
 
       {/* Newsletter Signup */}
-      <div className="bg-gray-800/50 border-t border-gray-800 py-12">
+      {/* <div className="bg-gray-800/50 border-t border-gray-800 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-md mx-auto text-center">
             <h4 className="font-semibold text-white mb-2">Subscribe to Newsletter</h4>
-            <p className="text-gray-500 text-sm mb-4">Get 10% off your first order</p>
+            <p className="text-gray-500 text-sm mb-4">Get 5% off your first order</p>
             <form className="flex gap-2">
               <input
                 type="email"
@@ -188,7 +188,7 @@ export function Footer() {
             </form>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Bottom Bar */}
       <div className="border-t border-gray-800 py-6">

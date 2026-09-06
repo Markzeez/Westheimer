@@ -74,8 +74,8 @@ function OnboardingPageContent() {
         const { data } = await supabase
           .from('users')
           .select('onboarding_completed, onboarding_data')
-          .eq('id', (session.user as any).id)
-          .single();
+.eq('id', (session.user as any).id)         
+           .single();
 
         if (data?.onboarding_completed) {
           setCompleted(true);
@@ -202,7 +202,7 @@ function OnboardingPageContent() {
             className="max-w-md mx-auto px-4"
           >
             <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Sparkles className="w-8 h-8 text-primary-600" />
+              <Sparkles className="w-8 h-8 text-black" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Westheimer Designs</h2>
             <p className="text-gray-500 mb-8">Please sign in to continue your onboarding journey.</p>
@@ -249,7 +249,7 @@ function OnboardingPageContent() {
                     index < currentStep
                       ? 'bg-primary-600 text-white'
                       : index === currentStep
-                      ? 'bg-primary-100 text-primary-600 ring-4 ring-primary-200'
+                      ? 'bg-primary-100 text-black ring-4 ring-primary-200'
                       : 'bg-gray-100 text-gray-400'
                   }`}
                 >
@@ -315,7 +315,7 @@ function OnboardingPageContent() {
                     ))}
                   </div>
                   {formData.styles.length > 0 && (
-                    <p className="text-sm text-primary-600 font-medium flex items-center gap-1">
+                    <p className="text-sm text-black font-medium flex items-center gap-1">
                       <Check className="w-4 h-4" />
                       {formData.styles.length} style{formData.styles.length > 1 ? 's' : ''} selected
                     </p>
@@ -354,7 +354,7 @@ function OnboardingPageContent() {
                     ))}
                   </div>
                   {formData.rooms.length > 0 && (
-                    <p className="text-sm text-primary-600 font-medium flex items-center gap-1">
+                    <p className="text-sm text-black font-medium flex items-center gap-1">
                       <Check className="w-4 h-4" />
                       {formData.rooms.length} room{formData.rooms.length > 1 ? 's' : ''} selected
                     </p>

@@ -144,7 +144,7 @@ export default function CheckoutPage() {
                       index < currentStep
                         ? 'bg-primary-600 text-white'
                         : index === currentStep
-                        ? 'bg-primary-100 text-primary-600 border-2 border-primary-600'
+                        ? 'bg-primary-100 text-black border-2 border-primary-600'
                         : 'bg-gray-100 text-gray-400'
                     }`}>
                       {index < currentStep ? <Check className="w-5 h-5" /> : <step.icon className="w-5 h-5" />}
@@ -179,7 +179,7 @@ export default function CheckoutPage() {
                   >
                     <div className="bg-white rounded-2xl border border-gray-200 p-6">
                       <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                        <Truck className="w-5 h-5 text-primary-600" />
+                        <Truck className="w-5 h-5 text-black" />
                         Shipping Information
                       </h2>
                       
@@ -270,7 +270,7 @@ export default function CheckoutPage() {
                   >
                     <div className="bg-white rounded-2xl border border-gray-200 p-6">
                       <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                        <CreditCard className="w-5 h-5 text-primary-600" />
+                        <CreditCard className="w-5 h-5 text-black" />
                         Payment Details
                       </h2>
 
@@ -351,7 +351,7 @@ export default function CheckoutPage() {
                   >
                     <div className="bg-white rounded-2xl border border-gray-200 p-6">
                       <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-primary-600" />
+                        <Shield className="w-5 h-5 text-black" />
                         Review Your Order
                       </h2>
 

@@ -74,7 +74,7 @@ export default function AboutPage() {
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
                 Crafting Furniture That
                 <br />
-                <span className="text-primary-600">Feels Like Home</span>
+                <span className="text-black">Feels Like Home</span>
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
                 Since 2019, we&apos;ve been on a mission to bring premium, thoughtfully designed furniture 
@@ -97,7 +97,7 @@ export default function AboutPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               <div>
-                <span className="text-primary-600 font-medium text-sm uppercase tracking-wide">Our Philosophy</span>
+                <span className="text-black font-medium text-sm uppercase tracking-wide">Our Philosophy</span>
                 <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-2 mb-6">Design with Purpose, Build with Integrity</h2>
                 <div className="space-y-6 text-gray-600 leading-relaxed text-lg">
                   <p>
@@ -132,7 +132,7 @@ export default function AboutPage() {
         <section className="py-20 lg:py-32 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <span className="text-primary-600 font-medium text-sm uppercase tracking-wide">Core Values</span>
+              <span className="text-black font-medium text-sm uppercase tracking-wide">Core Values</span>
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-2 mb-4">What We Stand For</h2>
               <p className="text-gray-600 text-lg">These principles guide every decision we make</p>
             </div>
@@ -147,7 +147,7 @@ export default function AboutPage() {
                   className="bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-xl transition-shadow"
                 >
                   <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-5">
-                    <value.icon className="w-7 h-7 text-primary-600" />
+                    <value.icon className="w-7 h-7 text-black" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">{value.title}</h3>
                   <p className="text-gray-600 leading-relaxed">{value.desc}</p>
@@ -161,7 +161,7 @@ export default function AboutPage() {
         <section className="py-20 lg:py-32 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <span className="text-primary-600 font-medium text-sm uppercase tracking-wide">Our Journey</span>
+              <span className="text-black font-medium text-sm uppercase tracking-wide">Our Journey</span>
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-2 mb-4">Milestones</h2>
             </div>
             <div className="relative">
@@ -180,7 +180,7 @@ export default function AboutPage() {
                       {index + 1}
                     </div>
                     <div className="bg-gray-50 rounded-2xl p-6 lg:p-8">
-                      <span className="text-primary-600 font-bold text-lg">{milestone.year}</span>
+                      <span className="text-black font-bold text-lg">{milestone.year}</span>
                       <h3 className="text-xl font-semibold text-gray-900 mt-1">{milestone.title}</h3>
                       <p className="text-gray-600 mt-2">{milestone.desc}</p>
                     </div>
@@ -240,7 +240,7 @@ export default function AboutPage() {
                   className="p-8 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors"
                 >
                   <div className="w-16 h-16 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-5">
-                    <promise.icon className="w-8 h-8 text-primary-600" />
+                    <promise.icon className="w-8 h-8 text-black" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">{promise.title}</h3>
                   <p className="text-gray-600">{promise.desc}</p>
@@ -260,7 +260,7 @@ export default function AboutPage() {
               Join over 100,000 customers who&apos;ve made their house a home with Westheimer Designs.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/shop" className="px-8 py-4 bg-white text-primary-600 font-semibold rounded-xl hover:bg-primary-50 transition-colors">
+              <Link href="/shop" className="px-8 py-4 bg-white text-black font-semibold rounded-xl hover:bg-primary-50 transition-colors">
                 Shop Now
               </Link>
               <Link href="/contact" className="px-8 py-4 border-2 border-white text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors">

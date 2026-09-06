@@ -77,7 +77,7 @@ export default function CartPage() {
                                 <Link href={`/products/${item.productId}`}>
                                   <h3 className="font-semibold text-gray-900 mb-1">{item.name}</h3>
                                 </Link>
-                                <p className="text-lg font-bold text-primary-600">{formatPrice(item.price)}</p>
+                                <p className="text-lg font-bold text-black">{formatPrice(item.price)}</p>
                               </div>
                               <button
                                 onClick={() => toggleItem({ productId: item.productId, name: item.name, price: item.price, image: item.image })}
@@ -193,7 +193,7 @@ export default function CartPage() {
                         { icon: Gift, text: 'Gift wrapping available' },
                       ].map((item, i) => (
                         <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                          <item.icon className="w-4 h-4 text-primary-600" />
+                          <item.icon className="w-4 h-4 text-black" />
                           {item.text}
                         </div>
                       ))}

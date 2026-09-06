@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { ComponentType } from 'react';
 import {
@@ -432,7 +432,7 @@ export default function AccountPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-black" />
           <p className="text-sm text-gray-500">Loading your account...</p>
         </div>
       </div>
@@ -444,7 +444,7 @@ export default function AccountPage() {
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="mx-auto max-w-md px-4 text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
-            <User className="h-8 w-8 text-primary-600" />
+            <User className="h-8 w-8 text-black" />
           </div>
 
           <h1 className="mb-4 text-2xl font-bold text-gray-900">
@@ -493,7 +493,7 @@ export default function AccountPage() {
                 {/* User Info */}
                 <div className="mb-6 flex items-center gap-4 border-b border-gray-200 pb-6">
                   <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-full bg-primary-100">
-                    <User className="h-8 w-8 text-primary-600" />
+                    <User className="h-8 w-8 text-black" />
                   </div>
 
                   <div className="min-w-0">
@@ -532,7 +532,7 @@ export default function AccountPage() {
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
                           isActive
-                            ? 'bg-primary-50 text-primary-600'
+                            ? 'bg-primary-50 text-black'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         }`}
                       >
@@ -701,7 +701,7 @@ export default function AccountPage() {
                     {/* Change Password */}
                     <div className="rounded-2xl border border-gray-200 bg-white p-6">
                       <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold text-gray-900">
-                        <Shield className="h-5 w-5 text-primary-600" />
+                        <Shield className="h-5 w-5 text-black" />
                         Change Password
                       </h2>
 
@@ -819,7 +819,7 @@ export default function AccountPage() {
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                       {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-16">
-                          <Loader2 className="mb-4 h-8 w-8 animate-spin text-primary-600" />
+                          <Loader2 className="mb-4 h-8 w-8 animate-spin text-black" />
                           <p className="text-sm text-gray-500">
                             Loading orders...
                           </p>
@@ -923,7 +923,7 @@ export default function AccountPage() {
                               'Wishlist is already empty.'
                             )
                           }
-                          className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                          className="text-sm font-medium text-black hover:text-primary-700"
                         >
                           Clear All
                         </button>
@@ -963,7 +963,7 @@ export default function AccountPage() {
                     {/* Email Notifications */}
                     <div className="rounded-2xl border border-gray-200 bg-white p-6">
                       <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold text-gray-900">
-                        <Bell className="h-5 w-5 text-primary-600" />
+                        <Bell className="h-5 w-5 text-black" />
                         Email Notifications
                       </h2>
 
@@ -986,7 +986,7 @@ export default function AccountPage() {
                             <input
                               type="checkbox"
                               defaultChecked={index < 2}
-                              className="h-5 w-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                              className="h-5 w-5 rounded border-gray-300 text-black focus:ring-primary-500"
                             />
                           </label>
                         ))}

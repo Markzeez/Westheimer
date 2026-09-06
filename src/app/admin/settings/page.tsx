@@ -231,7 +231,7 @@ export default function AdminSettingsPage() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 whitespace-nowrap rounded-t-lg px-4 py-3 text-sm font-medium transition-colors ${
                       isActive
-                        ? 'border-b-2 border-primary-600 bg-white text-primary-600'
+                        ? 'border-b-2 border-primary-600 bg-white text-black'
                         : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
                     }`}
                   >

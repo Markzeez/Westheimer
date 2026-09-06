@@ -99,7 +99,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
             {activeFilterCount > 0 && (
               <button
                 onClick={clearFilters}
-                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                className="text-sm text-black hover:text-primary-700 font-medium"
               >
                 Clear all
               </button>
@@ -121,7 +121,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                     value={cat.value}
                     checked={filters.category === cat.value}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
-                    className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                    className="w-4 h-4 text-black border-gray-300 focus:ring-primary-500"
                   />
                   <div className="flex-1">
                     <span className="text-sm text-gray-700">{cat.label}</span>
@@ -147,7 +147,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                     value={range.value}
                     checked={filters.priceRange === range.value}
                     onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                    className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                    className="w-4 h-4 text-black border-gray-300 focus:ring-primary-500"
                   />
                   <span className="text-sm text-gray-700">{range.label}</span>
                 </label>
@@ -170,7 +170,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                     value={rating}
                     checked={filters.rating === rating}
                     onChange={(e) => handleFilterChange('rating', parseInt(e.target.value))}
-                    className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                    className="w-4 h-4 text-black border-gray-300 focus:ring-primary-500"
                   />
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
@@ -205,7 +205,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                     type="checkbox"
                     checked={filters[opt.key] as boolean}
                     onChange={(e) => handleFilterChange(opt.key, e.target.checked)}
-                    className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                    className="w-4 h-4 text-black border-gray-300 rounded focus:ring-primary-500"
                   />
                   <span className="text-sm text-gray-700">{opt.label}</span>
                 </label>
@@ -252,7 +252,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                   {activeFilterCount > 0 && (
                     <button
                       onClick={clearFilters}
-                      className="text-sm text-primary-600 font-medium"
+                      className="text-sm text-black font-medium"
                     >
                       Clear all
                     </button>
@@ -281,7 +281,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                           value={cat.value}
                           checked={filters.category === cat.value}
                           onChange={(e) => handleFilterChange('category', e.target.value)}
-                          className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                          className="w-4 h-4 text-black border-gray-300 focus:ring-primary-500"
                         />
                         <span className="text-sm text-gray-700">{cat.label}</span>
                         <span className="text-xs text-gray-400 ml-auto">({cat.count})</span>
@@ -304,7 +304,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                           value={range.value}
                           checked={filters.priceRange === range.value}
                           onChange={(e) => handleFilterChange('priceRange', e.target.value)}
-                          className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                          className="w-4 h-4 text-black border-gray-300 focus:ring-primary-500"
                         />
                         <span className="text-sm text-gray-700">{range.label}</span>
                       </label>
@@ -326,7 +326,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                           value={rating}
                           checked={filters.rating === rating}
                           onChange={(e) => handleFilterChange('rating', parseInt(e.target.value))}
-                          className="w-4 h-4 text-primary-600 border-gray-300 focus:ring-primary-500"
+                          className="w-4 h-4 text-black border-gray-300 focus:ring-primary-500"
                         />
                         <div className="flex items-center gap-1">
                           {[...Array(5)].map((_, i) => (
@@ -360,7 +360,7 @@ export function ProductFilters({ onFilterChange }: ProductFiltersProps) {
                           type="checkbox"
                           checked={filters[opt.key] as boolean}
                           onChange={(e) => handleFilterChange(opt.key, e.target.checked)}
-                          className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                          className="w-4 h-4 text-black border-gray-300 rounded focus:ring-primary-500"
                         />
                         <span className="text-sm text-gray-700">{opt.label}</span>
                       </label>

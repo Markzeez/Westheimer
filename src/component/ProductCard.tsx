@@ -6,7 +6,7 @@ import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { ProductImageCarousel } from '@/components/ui/ProductImageCarousel';
 
 interface Product {
-  _id: string;
+  id: string;
   name: string;
   price: number;
   category: string;
@@ -35,7 +35,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
 
   if (variant === 'compact') {
     return (
-      <Link href={`/products/${product._id}`} className="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow group">
+      <Link href={`/products/${product.id}`} className="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow group">
         <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
           <img
             src={product.images[0]?.url || '/products/placeholder.jpg'}
@@ -44,8 +44,8 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
           />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-gray-900 truncate group-hover:text-primary-600 transition-colors">{product.name}</h4>
-          <p className="text-sm font-semibold text-primary-600">{formatPrice(product.price)}</p>
+          <h4 className="font-medium text-gray-900 truncate group-hover:text-black transition-colors">{product.name}</h4>
+          <p className="text-sm font-semibold text-black">{formatPrice(product.price)}</p>
         </div>
         <button className="p-2 text-gray-400 hover:text-red-500 transition-colors" aria-label="Add to wishlist">
           <Heart className="w-5 h-5" />
@@ -94,7 +94,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
             <button className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-700 hover:text-red-500 hover:bg-white transition-colors shadow-lg">
               <Heart className="w-5 h-5" />
             </button>
-            <button className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-700 hover:text-primary-600 hover:bg-white transition-colors shadow-lg">
+            <button className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-700 hover:text-black hover:bg-white transition-colors shadow-lg">
               <ShoppingBag className="w-5 h-5" />
             </button>
           </div>
@@ -102,7 +102,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
 
         <div className="p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-primary-600 uppercase tracking-wide">
+            <span className="text-xs font-medium text-black uppercase tracking-wide">
               {product.category.replace('-', ' ')}
             </span>
             <div className="flex items-center gap-1 text-sm text-yellow-500">
@@ -112,8 +112,8 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
             </div>
           </div>
           
-          <Link href={`/products/${product._id}`}>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors line-clamp-1">
+          <Link href={`/products/${product.id}`}>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-black transition-colors line-clamp-1">
               {product.name}
             </h3>
           </Link>
@@ -131,8 +131,8 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
               {getStockStatus(product.inventory) === 'out-of-stock' && 'Out of Stock'}
             </span>
             <Link
-              href={`/products/${product._id}`}
-              className="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1"
+              href={`/products/${product.id}`}
+              className="text-sm font-medium text-black hover:text-primary-700 flex items-center gap-1"
             >
               View Details
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +152,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
       viewport={{ once: true }}
       className="group bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300"
     >
-      <Link href={`/products/${product._id}`} className="block relative aspect-square overflow-hidden">
+      <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden">
         <ProductImageCarousel
           images={product.images}
           showThumbnails={false}
@@ -183,7 +183,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
           <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-red-500 transition-colors transform translate-y-4 group-hover:translate-y-0">
             <Heart className="w-5 h-5" />
           </button>
-          <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-primary-600 transition-colors transform translate-y-4 group-hover:translate-y-0">
+          <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-black transition-colors transform translate-y-4 group-hover:translate-y-0">
             <ShoppingBag className="w-5 h-5" />
           </button>
         </div>
@@ -191,7 +191,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
 
       <div className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-primary-600 uppercase tracking-wide">
+          <span className="text-xs font-medium text-black uppercase tracking-wide">
             {product.category.replace('-', ' ')}
           </span>
           <div className="flex items-center gap-1 text-sm text-yellow-500">
@@ -201,8 +201,8 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
           </div>
         </div>
         
-        <Link href={`/products/${product._id}`}>
-          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors line-clamp-1">
+        <Link href={`/products/${product.id}`}>
+          <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-black transition-colors line-clamp-1">
             {product.name}
           </h3>
         </Link>

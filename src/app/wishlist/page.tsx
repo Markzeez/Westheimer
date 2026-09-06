@@ -80,12 +80,12 @@ export default function WishlistPage() {
                       <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
                         <Link
                           href={`/products/${item.productId}`}
-                          className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-primary-600 transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                          className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-black transform translate-y-4 group-hover:translate-y-0 transition-transform"
                         >
                           <Eye className="w-6 h-6" />
                         </Link>
                         <button
-                          className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-primary-600 transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                          className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-700 hover:text-black transform translate-y-4 group-hover:translate-y-0 transition-transform"
                         >
                           <ShoppingBag className="w-6 h-6" />
                         </button>
@@ -103,11 +103,11 @@ export default function WishlistPage() {
 
                     <div className="p-4">
                       <Link href={`/products/${item.productId}`}>
-                        <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors line-clamp-1">
+                        <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-black transition-colors line-clamp-1">
                           {item.name}
                         </h3>
                       </Link>
-                      <p className="text-lg font-bold text-primary-600">{formatPrice(item.price)}</p>
+                      <p className="text-lg font-bold text-black">{formatPrice(item.price)}</p>
                       <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
                         <button
                           onClick={() => removeItem(item.productId)}

@@ -216,7 +216,7 @@ export const useWishlistStore = create<WishlistState>()(
             .eq('user_id', user.id);
 
           if (wishlist) {
-            const items = wishlist.map(w => ({
+            const items = wishlist.map((w: any) => ({
               productId: w.product_id,
               name: w.product?.name || '',
               price: w.product?.price || 0,

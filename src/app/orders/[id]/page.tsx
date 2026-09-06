@@ -119,7 +119,7 @@ export default function OrderDetailPage() {
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="text-center">
             <p className="text-gray-500">Order not found</p>
-            <Link href="/account?tab=orders" className="mt-4 text-primary-600 hover:underline">Back to Orders</Link>
+            <Link href="/account?tab=orders" className="mt-4 text-black hover:underline">Back to Orders</Link>
           </div>
         </main>
         <Footer />
@@ -192,7 +192,7 @@ export default function OrderDetailPage() {
                     }`}>
                       <step.icon className="w-6 h-6" />
                     </div>
-                    <span className={`text-xs font-medium text-center w-24 block ${index <= currentStep ? 'text-primary-600' : 'text-gray-400'}`}>
+                    <span className={`text-xs font-medium text-center w-24 block ${index <= currentStep ? 'text-black' : 'text-gray-400'}`}>
                       {step.label}
                     </span>
                   </div>
@@ -240,7 +240,7 @@ export default function OrderDetailPage() {
                   className="bg-white rounded-2xl border border-gray-200 p-6"
                 >
                   <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-primary-600" />
+                    <MapPin className="w-5 h-5 text-black" />
                     Shipping Address
                   </h3>
                   <address className="text-gray-600 not-italic space-y-1">
@@ -259,7 +259,7 @@ export default function OrderDetailPage() {
                   className="bg-white rounded-2xl border border-gray-200 p-6"
                 >
                   <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-primary-600" />
+                    <CreditCard className="w-5 h-5 text-black" />
                     Payment Method
                   </h3>
                   <p className="text-gray-600">{order.paymentMethod}</p>
@@ -277,7 +277,7 @@ export default function OrderDetailPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                        <Truck className="w-5 h-5 text-primary-600" />
+                        <Truck className="w-5 h-5 text-black" />
                         Tracking Information
                       </h3>
                       <p className="text-gray-500">Your package is on the way!</p>

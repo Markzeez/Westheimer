@@ -131,11 +131,11 @@ export default function ContactPage() {
                   className="p-6 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors group"
                 >
                   <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
-                    <item.icon className="w-6 h-6 text-primary-600" />
+                    <item.icon className="w-6 h-6 text-black" />
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
                   <p className="text-sm text-gray-500 mb-4">{item.desc}</p>
-                  <Link href={item.link} className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+                  <Link href={item.link} className="text-sm text-black hover:text-primary-700 font-medium flex items-center gap-1">
                     Learn more <ChevronRight className="w-4 h-4" />
                   </Link>
                 </motion.div>
@@ -201,14 +201,14 @@ export default function ContactPage() {
                         className="flex gap-4"
                       >
                         <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                          <item.icon className="w-5 h-5 text-primary-600" />
+                          <item.icon className="w-5 h-5 text-black" />
                         </div>
                         <div>
                           <p className="font-medium text-gray-900">{item.title}</p>
                           <div className="text-sm text-gray-600 space-y-0.5">
                             {item.lines.map((line, i) => (
                               item.link && i === 0 ? (
-                                <a key={i} href={item.link} className="text-primary-600 hover:text-primary-700">{line}</a>
+                                <a key={i} href={item.link} className="text-black hover:text-primary-700">{line}</a>
                               ) : (
                                 <span key={i}>{line}</span>
                               )
@@ -224,7 +224,7 @@ export default function ContactPage() {
                     <h3 className="font-medium text-gray-900 mb-4">Follow Us</h3>
                     <div className="flex gap-3">
                       {['Instagram', 'Pinterest', 'Facebook', 'Twitter'].map((social, i) => (
-                        <a key={social} href="#" className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500 hover:bg-primary-100 hover:text-primary-600 transition-colors" aria-label={social}>
+                        <a key={social} href="#" className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500 hover:bg-primary-100 hover:text-black transition-colors" aria-label={social}>
                           <MessageSquare className="w-5 h-5" />
                         </a>
                       ))}

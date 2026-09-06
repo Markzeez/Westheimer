@@ -299,7 +299,7 @@ export default function AdminAnalyticsPage() {
                     <tr key={product.name} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <span className="w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-sm font-medium">
+                          <span className="w-6 h-6 rounded-full bg-primary-100 text-black flex items-center justify-center text-sm font-medium">
                             {index + 1}
                           </span>
                           <span className="font-medium text-gray-900">{product.name}</span>

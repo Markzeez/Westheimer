@@ -3,7 +3,7 @@
 import { ProductCard } from './ProductCard';
 
 interface Product {
-  _id: string;
+  id: string;
   name: string;
   price: number;
   category: string;
@@ -44,7 +44,7 @@ export function ProductGrid({ products, viewMode = 'grid', className = '' }: Pro
       >
         {products.map((product) => (
           <ProductCard
-            key={product._id}
+            key={product.id}
             product={product}
             variant={viewMode === 'list' ? 'compact' : 'default'}
           />

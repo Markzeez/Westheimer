@@ -265,7 +265,7 @@ export default function AdminDashboard() {
             <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
             <Link
               href="/admin/orders"
-              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              className="text-sm text-black hover:text-primary-700 font-medium"
             >
               View All →
             </Link>
@@ -334,7 +334,7 @@ export default function AdminDashboard() {
             <h3 className="text-lg font-semibold text-gray-900">Low Stock Alert</h3>
             <Link
               href="/admin/products"
-              className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              className="text-sm text-black hover:text-primary-700 font-medium"
             >
               View All →
             </Link>

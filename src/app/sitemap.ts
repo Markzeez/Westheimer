@@ -7,7 +7,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = siteConfig.url;
 
   // Static pages
-  const staticPages = [
+  const staticPages: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: new Date(),
@@ -103,7 +103,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "decor",
   ];
 
-  const categoryPages = categories.map(category => ({
+  const categoryPages: MetadataRoute.Sitemap = categories.map(category => ({
     url: `${baseUrl}/shop?category=${category}`,
     lastModified: new Date(),
     changeFrequency: "daily",

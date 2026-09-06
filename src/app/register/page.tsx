@@ -82,7 +82,7 @@ export default function RegisterPage() {
         </Link>
         <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">Create your account</h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Already have an account? <Link href="/login" className="font-medium text-primary-600 hover:text-primary-500">Sign in</Link>
+          Already have an account? <Link href="/login" className="font-medium text-black hover:text-primary-500">Sign in</Link>
         </p>
       </div>
 
@@ -222,10 +222,10 @@ export default function RegisterPage() {
                 type="checkbox"
                 id="terms"
                 required
-                className="w-4 h-4 mt-0.5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                className="w-4 h-4 mt-0.5 text-black border-gray-300 rounded focus:ring-primary-500"
               />
               <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-                I agree to the <Link href="/terms" className="text-primary-600 hover:text-primary-500">Terms of Service</Link> and <Link href="/privacy" className="text-primary-600 hover:text-primary-500">Privacy Policy</Link>
+                I agree to the <Link href="/terms" className="text-black hover:text-primary-500">Terms of Service</Link> and <Link href="/privacy" className="text-black hover:text-primary-500">Privacy Policy</Link>
               </label>
             </div>
 
@@ -255,7 +255,7 @@ export default function RegisterPage() {
                 const formElement = document.querySelector('form');
                 if (formElement) formElement.requestSubmit();
               }}
-              className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 border border-primary-600 rounded-lg text-sm font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors shadow-xs"
+              className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 border border-primary-600 rounded-lg text-sm font-medium text-black bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors shadow-xs"
             >
               <span>Create account</span>
               <ArrowRight className="w-4 h-4 text-black-600" />

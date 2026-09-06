@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useCartStore } from '@/stores/cartStore';
 import { useWishlistStore } from '@/stores/cartStore';
 
+
 export function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, getSubtotal, getTotalItems } = useCartStore();
   const { toggleItem, isInWishlist } = useWishlistStore();
@@ -74,7 +75,7 @@ export function CartDrawer() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <Link href={`/products/${item.productId}`}>
-                          <h4 className="font-medium text-gray-900 truncate group-hover:text-primary-600">{item.name}</h4>
+                          <h4 className="font-medium text-gray-900 truncate group-hover:text-black">{item.name}</h4>
                         </Link>
                         <button
                           onClick={() => toggleItem({ productId: item.productId, name: item.name, price: item.price, image: item.image })}
@@ -84,7 +85,7 @@ export function CartDrawer() {
                           <Heart className={`w-5 h-5 ${isInWishlist(item.productId) ? 'fill-current text-red-500' : ''}`} />
                         </button>
                       </div>
-                      <p className="text-sm font-semibold text-primary-600 mt-1">{formatPrice(item.price)}</p>
+                      <p className="text-sm font-semibold text-black mt-1">{formatPrice(item.price)}</p>
                       
                       {/* Quantity Selector */}
                       <div className="mt-2 flex items-center gap-3">

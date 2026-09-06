@@ -59,7 +59,24 @@ export async function generateMetadata({
     };
   }
 
-  return generateProductMetadata(product);
+  return generateProductMetadata({
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    category: product.category,
+    subCategory: product.sub_category,
+    images: product.images,
+    inventory: product.inventory,
+    ratings: product.ratings,
+    reviewCount: product.review_count,
+    features: product.features ?? [],
+    dimensions: product.dimensions,
+    material: product.material,
+    color: product.color,
+    isActive: product.is_active,
+    isFeatured: product.is_featured,
+  });
 }
 
 export default async function ProductDetailPage({
@@ -73,7 +90,22 @@ export default async function ProductDetailPage({
     notFound();
   }
 
-  const productSchema = generateProductSchema(product);
+  const productSchema = generateProductSchema({
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    category: product.category,
+    subCategory: product.sub_category,
+    images: product.images,
+    inventory: product.inventory,
+    ratings: product.ratings,
+    reviewCount: product.review_count,
+    features: product.features ?? [],
+    dimensions: product.dimensions,
+    material: product.material,
+    color: product.color,
+  });
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     {
@@ -278,7 +310,7 @@ export default async function ProductDetailPage({
           <div className="space-y-6">
             {/* Category */}
             <div>
-              <span className="text-sm font-medium uppercase tracking-wide text-primary-600">
+              <span className="text-sm font-medium uppercase tracking-wide text-black">
                 {product.category.replace(/-/g, " ")}
 
                 {product.sub_category &&

@@ -51,7 +51,7 @@ export function generateProductMetadata(product: Product): Metadata {
     ].filter(Boolean),
     authors: [{ name: siteConfig.name }],
     openGraph: {
-      type: "product",
+      type: "website",
       url: productUrl,
       title: product.name,
       description: product.description.slice(0, 160),

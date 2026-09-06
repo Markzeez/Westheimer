@@ -16,8 +16,10 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
 
 // Helper functions for admin operations
 export async function getUserByEmail(email: string) {
-  const { data, error } = await supabaseAdmin.auth.admin.getUserByEmail(email);
-  return { data, error };
+  const { data, error } = await supabaseAdmin.auth.admin.listUsers();
+  if (error) return { data: null, error };
+  const user = data.users.find(u => u.email === email) ?? null;
+  return { data: user ? { user } : null, error: null };
 }
 
 export async function createUser(email: string, password: string, userData: any) {
@@ -186,8 +188,8 @@ export const dbAdmin = {
       { data: ordersByStatus },
       { data: recentOrders },
       { data: lowStockProducts },
-      { data: topProducts },
-      { data: revenueByMonth },
+      topProducts,
+      revenueByMonth,
     ] = await Promise.all([
       supabaseAdmin.from('users').select('*', { count: 'exact', head: true }),
       supabaseAdmin.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true),

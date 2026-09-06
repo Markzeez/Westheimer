@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Package } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams?.get('callbackUrl') || '/';
@@ -68,7 +68,7 @@ export default function LoginPage() {
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
           Or{' '}
-          <Link href="/register" className="font-medium text-primary-600 hover:text-primary-500">
+          <Link href="/register" className="font-medium text-black hover:text-primary-500">
             create a new account
           </Link>
         </p>
@@ -142,13 +142,13 @@ export default function LoginPage() {
               <label className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  className="w-4 h-4 text-black border-gray-300 rounded focus:ring-primary-500"
                 />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
               <Link
                 href="/forgot-password"
-                className="text-sm font-medium text-primary-600 hover:text-primary-500"
+                className="text-sm font-medium text-black hover:text-primary-500"
               >
                 Forgot password?
               </Link>
@@ -178,14 +178,14 @@ export default function LoginPage() {
           </form>
 
           {/* Main Log-in Section Button */}
-          <div className="mt-6 pt-6 border-t border-slate-200">
+          <div className=" border-slate-200">
             <button
               type="button"
               onClick={() => {
                 const formElement = document.querySelector('form');
                 if (formElement) formElement.requestSubmit();
               }}
-              className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors shadow-xs"
+              className="w-full inline-flex justify-center items-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-medium text-black bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors shadow-xs"
             >
               <span>Log-in</span>
             </button>
@@ -193,5 +193,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
