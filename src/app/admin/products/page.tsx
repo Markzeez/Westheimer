@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, ChangeEvent, FormEvent } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package,
@@ -542,7 +543,14 @@ export default function AdminProductsPage() {
                         key={i}
                         className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 group"
                       >
-                        <img src={preview} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                        <Image
+                          src={preview}
+                          alt={`Preview ${i + 1}`}
+                          fill
+                          unoptimized
+                          sizes="(max-width: 768px) 20vw, 120px"
+                          className="object-cover"
+                        />
                         <button
                           type="button"
                           onClick={() => removeImage(i)}

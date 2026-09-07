@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase';
-import { isCloudinaryConfigured, uploadMultipleToCloudinary, deleteFromCloudinary } from '@/lib/cloudinary';
+import { isCloudinaryConfigured, uploadMultipleToCloudinary } from '@/lib/cloudinary';
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,8 +68,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    
-    if (!session || (session.user as any).role !== 'admin') {
+    const userRole = (session?.user as { role?: string } | undefined)?.role;
+
+    if (!session || userRole !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -92,7 +93,12 @@ export async function POST(request: NextRequest) {
     const isFeatured = formData.get('isFeatured') === 'true';
 
     // Handle images - upload to Cloudinary if configured
-    let images: any[] = [];
+    let images: Array<{
+      url: string;
+      publicId?: string;
+      alt: string;
+      isPrimary: boolean;
+    }> = [];
     const imageFiles = formData.getAll('images') as File[];
     
     if (imageFiles.length > 0 && imageFiles[0].size > 0) {

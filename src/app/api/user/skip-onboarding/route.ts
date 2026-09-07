@@ -22,7 +22,7 @@ export async function POST() {
         onboarding_completed_at: new Date().toISOString(),
         onboarding_data: { skipped: true },
       })
-      .eq('id', (session.user as any).id);
+      .eq('id', session.user.id);
 
     if (error) {
       console.error('Error skipping onboarding:', error);

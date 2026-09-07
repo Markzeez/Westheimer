@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+// @ts-expect-error Next.js processes this stylesheet import at build time.
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { siteConfig, defaultMetadata } from "@/lib/seo/config";
@@ -76,7 +77,6 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>

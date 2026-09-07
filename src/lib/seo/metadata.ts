@@ -1,6 +1,5 @@
 import { Metadata } from "next";
-import { siteConfig, defaultMetadata, categoryMetadata } from "./config";
-import { generateBreadcrumbSchema } from "./structured-data";
+import { siteConfig, categoryMetadata } from "./config";
 
 interface Product {
   id: string;
@@ -34,7 +33,6 @@ interface Category {
 }
 
 export function generateProductMetadata(product: Product): Metadata {
-  const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
   const productUrl = `${siteConfig.url}/products/${product.id}`;
   const price = product.price.toFixed(2);
 

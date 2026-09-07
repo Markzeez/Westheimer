@@ -24,19 +24,6 @@ interface Product {
   brand?: string;
 }
 
-interface Organization {
-  name: string;
-  url: string;
-  logo: string;
-  sameAs: string[];
-  contactPoint: {
-    telephone: string;
-    contactType: string;
-    availableLanguage: string;
-    hoursAvailable: string;
-  };
-}
-
 export function generateOrganizationSchema(): object {
   return {
     "@context": "https://schema.org",
@@ -107,7 +94,6 @@ export function generateBreadcrumbSchema(items: Array<{ name: string; url: strin
 }
 
 export function generateProductSchema(product: Product): object {
-  const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
   const offers = {
     "@type": "Offer",
     url: `${siteConfig.url}/products/${product.id}`,

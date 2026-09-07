@@ -22,7 +22,11 @@ export async function getUserByEmail(email: string) {
   return { data: user ? { user } : null, error: null };
 }
 
-export async function createUser(email: string, password: string, userData: any) {
+export async function createUser(
+  email: string,
+  password: string,
+  userData: Record<string, unknown>,
+) {
   const { data, error } = await supabaseAdmin.auth.admin.createUser({
     email,
     password,
@@ -32,7 +36,10 @@ export async function createUser(email: string, password: string, userData: any)
   return { data, error };
 }
 
-export async function updateUser(userId: string, updates: any) {
+export async function updateUser(
+  userId: string,
+  updates: Parameters<typeof supabaseAdmin.auth.admin.updateUserById>[1],
+) {
   const { data, error } = await supabaseAdmin.auth.admin.updateUserById(userId, updates);
   return { data, error };
 }
@@ -74,7 +81,7 @@ export const dbAdmin = {
     return supabaseAdmin.from('users').select('*').eq('id', id).single();
   },
 
-  async updateUser(id: string, updates: any) {
+  async updateUser(id: string, updates: Record<string, unknown>) {
     return supabaseAdmin.from('users').update(updates).eq('id', id).select().single();
   },
 
@@ -125,11 +132,11 @@ export const dbAdmin = {
     return supabaseAdmin.from('products').select('*').eq('id', id).single();
   },
 
-  async createProduct(product: any) {
+  async createProduct(product: Record<string, unknown>) {
     return supabaseAdmin.from('products').insert(product).select().single();
   },
 
-  async updateProduct(id: string, updates: any) {
+  async updateProduct(id: string, updates: Record<string, unknown>) {
     return supabaseAdmin.from('products').update(updates).eq('id', id).select().single();
   },
 
@@ -174,7 +181,7 @@ export const dbAdmin = {
       .single();
   },
 
-  async updateOrder(id: string, updates: any) {
+  async updateOrder(id: string, updates: Record<string, unknown>) {
     return supabaseAdmin.from('orders').update(updates).eq('id', id).select().single();
   },
 
@@ -203,7 +210,7 @@ export const dbAdmin = {
         .select('status')
         .then(({ data }) => {
           const counts: Record<string, number> = {};
-          data?.forEach((o: any) => {
+          data?.forEach((o: { status: string }) => {
             counts[o.status] = (counts[o.status] || 0) + 1;
           });
           return { data: counts };
@@ -232,16 +239,32 @@ export const dbAdmin = {
           product:products(id, name)
         `)
         .then(async ({ data }) => {
-          const productMap = new Map();
-          data?.forEach((item: any) => {
-            const key = item.product.id;
+          const productMap = new Map<
+            string,
+            { id: string; name: string; sales: number; revenue: number }
+          >();
+
+          data?.forEach((item: {
+            quantity?: number | null;
+            price?: number | null;
+            product?: { id?: string; name?: string } | Array<{ id?: string; name?: string }>;
+          }) => {
+            const product = Array.isArray(item.product) ? item.product[0] : item.product;
+            if (!product?.id || !product.name) return;
+
+            const key = product.id;
+            const quantity = Number(item.quantity ?? 0);
+            const price = Number(item.price ?? 0);
+
             if (!productMap.has(key)) {
-              productMap.set(key, { id: key, name: item.product.name, sales: 0, revenue: 0 });
+              productMap.set(key, { id: key, name: product.name, sales: 0, revenue: 0 });
             }
-            const p = productMap.get(key);
-            p.sales += item.quantity;
-            p.revenue += item.quantity * item.price;
+
+            const p = productMap.get(key)!;
+            p.sales += quantity;
+            p.revenue += quantity * price;
           });
+
           return Array.from(productMap.values())
             .sort((a, b) => b.sales - a.sales)
             .slice(0, 10);
@@ -255,7 +278,10 @@ export const dbAdmin = {
       totalUsers: totalUsers || 0,
       totalProducts: totalProducts || 0,
       totalOrders: totalOrders || 0,
-      totalRevenue: revenueData?.reduce((sum: number, o: any) => sum + (o.total || 0), 0) || 0,
+      totalRevenue: revenueData?.reduce(
+        (sum: number, o: { total: number | null }) => sum + (o.total || 0),
+        0,
+      ) || 0,
       ordersByStatus: ordersByStatus || {},
       recentOrders: recentOrders || [],
       lowStockProducts: lowStockProducts || [],

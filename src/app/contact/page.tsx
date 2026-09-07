@@ -73,7 +73,7 @@ export default function ContactPage() {
     },
   });
 
-  const onSubmit = async (data: ContactForm) => {
+  const onSubmit = async () => {
     setIsSubmitting(true);
     try {
       // Simulate API call
@@ -223,7 +223,7 @@ export default function ContactPage() {
                   <div className="pt-6 border-t border-gray-200">
                     <h3 className="font-medium text-gray-900 mb-4">Follow Us</h3>
                     <div className="flex gap-3">
-                      {['Instagram', 'Pinterest', 'Facebook', 'Twitter'].map((social, i) => (
+                      {['Instagram', 'Pinterest', 'Facebook', 'Twitter'].map((social) => (
                         <a key={social} href="#" className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-gray-500 hover:bg-primary-100 hover:text-black transition-colors" aria-label={social}>
                           <MessageSquare className="w-5 h-5" />
                         </a>

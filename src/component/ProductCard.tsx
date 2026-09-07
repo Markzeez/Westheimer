@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
@@ -37,10 +38,12 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
     return (
       <Link href={`/products/${product.id}`} className="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow group">
         <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-          <img
+          <Image
             src={product.images[0]?.url || '/products/placeholder.jpg'}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            sizes="80px"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
         <div className="flex-1 min-w-0">

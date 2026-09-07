@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Heart, X, ShoppingBag, Eye, Trash2, Package } from 'lucide-react';
@@ -8,7 +9,7 @@ import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
 
 export default function WishlistPage() {
-  const { items, removeItem, toggleItem, clearWishlist } = useWishlistStore();
+  const { items, removeItem, clearWishlist } = useWishlistStore();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
@@ -69,10 +70,12 @@ export default function WishlistPage() {
                   >
                     <div className="relative aspect-square overflow-hidden">
                       <Link href={`/products/${item.productId}`} className="block h-full">
-                        <img
+                        <Image
                           src={item.image}
                           alt={item.name}
+                          fill
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         />
                       </Link>
                       

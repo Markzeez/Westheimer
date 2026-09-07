@@ -5,7 +5,8 @@ import { AnimatePresence } from 'framer-motion';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, Check, CreditCard, Truck, Shield, RotateCcw, Lock, MapPin, Mail, Phone, User, X } from 'lucide-react';
+import Image from 'next/image';
+import { ChevronRight, Check, CreditCard, Truck, Shield, Lock } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -44,7 +45,7 @@ const steps = [
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, getSubtotal, getTotalItems, clearCart } = useCartStore();
+  const { items, getSubtotal, clearCart } = useCartStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -95,11 +96,11 @@ export default function CheckoutPage() {
     );
   }
 
-  const handleShippingSubmit = async (data: ShippingForm) => {
+  const handleShippingSubmit = async () => {
     setCurrentStep(1);
   };
 
-  const handlePaymentSubmit = async (data: PaymentForm) => {
+  const handlePaymentSubmit = async () => {
     setCurrentStep(2);
   };
 
@@ -125,8 +126,6 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
-
-  const stepKeys = ['shipping', 'payment', 'review'] as const;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -379,7 +378,7 @@ export default function CheckoutPage() {
                         <div className="space-y-3 max-h-60 overflow-y-auto">
                           {items.map((item) => (
                             <div key={item.id} className="flex gap-3 p-3 bg-gray-50 rounded-xl">
-                              <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover" />
+                              <Image src={item.image} alt={item.name} width={64} height={64} className="w-16 h-16 rounded-lg object-cover" />
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-gray-900 truncate">{item.name}</p>
                                 <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
@@ -434,7 +433,7 @@ export default function CheckoutPage() {
                 <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-3">
-                      <img src={item.image} alt={item.name} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
+                      <Image src={item.image} alt={item.name} width={64} height={64} className="w-16 h-16 rounded-lg object-cover flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-900 truncate">{item.name}</p>
                         <p className="text-sm text-gray-500">Qty: {item.quantity}</p>

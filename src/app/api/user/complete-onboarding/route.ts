@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
         onboarding_completed_at: new Date().toISOString(),
         onboarding_data: onboardingData,
       })
-      .eq('id', (session.user as any).id)
+      .eq('id', session.user.id)
       .select()
       .single();
 

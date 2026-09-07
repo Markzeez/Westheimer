@@ -74,7 +74,7 @@ function OnboardingPageContent() {
         const { data } = await supabase
           .from('users')
           .select('onboarding_completed, onboarding_data')
-.eq('id', (session.user as any).id)         
+          .eq('id', session.user.id)
            .single();
 
         if (data?.onboarding_completed) {
@@ -101,7 +101,7 @@ function OnboardingPageContent() {
 
     try {
       const supabase = createSupabaseBrowserClient();
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         onboarding_data: formData,
         updated_at: new Date().toISOString(),
       };
@@ -114,7 +114,7 @@ function OnboardingPageContent() {
       const { error } = await supabase
         .from('users')
         .update(updateData)
-        .eq('id', (session.user as any).id);
+        .eq('id', session.user.id);
 
       if (error) throw error;
 

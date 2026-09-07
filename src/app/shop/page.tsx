@@ -48,7 +48,7 @@ import { ProductFilters } from "@/component/ProductFilters";
 import { Pagination } from "@/component/Pagination";
 import { Header } from "@/component/Header";
 import { Footer } from "@/component/Footer";
-import { Filter, X, Grid, List } from "lucide-react";
+import {  X, Grid, List } from "lucide-react";
 import { generateProductListSchema } from "@/lib/seo/structured-data";
 
 interface Product {

@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, Trash2, Heart } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCartStore } from '@/stores/cartStore';
 import { useWishlistStore } from '@/stores/cartStore';
 
@@ -70,7 +71,7 @@ export function CartDrawer() {
                     className="flex gap-3 p-3 bg-gray-50 rounded-xl"
                   >
                     <Link href={`/products/${item.productId}`} className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      <Image src={item.image} alt={item.name} fill sizes="80px" className="object-cover" />
                     </Link>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">

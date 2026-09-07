@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, User, Heart, ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
@@ -115,7 +115,7 @@ export function Header() {
                       <Link href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Account</Link>
                       <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Orders</Link>
                       <Link href="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Wishlist</Link>
-                      {(session.user as any)?.role === 'admin' && (
+                      {(session.user as { role?: string })?.role === 'admin' && (
                         <Link href="/admin" className="block px-4 py-2 text-sm text-black hover:bg-primary-50 font-medium">Admin Dashboard</Link>
                       )}
                       <div className="border-t border-gray-100 my-2" />

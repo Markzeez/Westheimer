@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,13 +13,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const user = session.user as typeof session.user & {
+      id: string;
+      role?: string;
+    };
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const status = searchParams.get('status');
     const userId = searchParams.get('userId');
 
-    const supabase = createSupabaseServerClient();
     const supabaseAdmin = createSupabaseAdminClient();
 
     const skip = (page - 1) * limit;
@@ -36,8 +40,8 @@ export async function GET(request: NextRequest) {
       .range(skip, skip + limit - 1);
 
     // Non-admin users can only see their own orders
-    if ((session.user as any).role !== 'admin') {
-      query = query.eq('user_id', (session.user as any).id);
+    if (user.role !== 'admin') {
+      query = query.eq('user_id', user.id);
     } else if (userId) {
       query = query.eq('user_id', userId);
     }
@@ -78,11 +82,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = createSupabaseServerClient();
+    const user = session.user as typeof session.user & {
+      id: string;
+      role?: string;
+    };
+
     const supabaseAdmin = createSupabaseAdminClient();
 
     const body = await request.json();
-    const { items, shippingAddress, paymentMethod } = body;
+    const { items, shippingAddress } = body;
 
     // Validate items and calculate total
     let total = 0;
@@ -131,7 +139,7 @@ export async function POST(request: NextRequest) {
     const { data: order, error } = await supabaseAdmin
       .from('orders')
       .insert({
-        user_id: (session.user as any).id,
+        user_id: user.id,
         total,
         status: 'pending',
         shipping_address: shippingAddress,
@@ -157,7 +165,7 @@ export async function POST(request: NextRequest) {
     await supabaseAdmin
       .from('carts')
       .update({ items: [] })
-      .eq('user_id', (session.user as any).id);
+      .eq('user_id', user.id);
 
     return NextResponse.json({
       success: true,

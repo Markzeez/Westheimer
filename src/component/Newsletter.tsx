@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Mail, ArrowRight, CheckCircle, X } from 'lucide-react';
+import { Mail, ArrowRight, CheckCircle } from 'lucide-react';
 
 export function Newsletter() {
   const [email, setEmail] = useState('');

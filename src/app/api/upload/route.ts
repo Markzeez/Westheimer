@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { uploadToCloudinary, uploadMultipleToCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary';
+import { uploadMultipleToCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary';
 
 export async function POST(request: NextRequest) {
   try {

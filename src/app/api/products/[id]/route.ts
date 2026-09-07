@@ -44,7 +44,7 @@ export async function PUT(
   try {
     const session = await auth();
     
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || (session.user as { role?: string } | undefined)?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -54,7 +54,7 @@ export async function PUT(
     const { id } = await params;
     const formData = await request.formData();
     
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     
     const fields = ['name', 'description', 'price', 'category', 'sub_category', 'inventory', 'material', 'color'];
     fields.forEach(field => {
@@ -120,7 +120,7 @@ export async function PUT(
         }));
       } else {
         // Fallback to base64
-        const images: any[] = [];
+        const images: Array<{ url: string; alt: string; isPrimary: boolean }> = [];
         for (let i = 0; i < imageFiles.length && i < 5; i++) {
           const file = imageFiles[i];
           const buffer = await file.arrayBuffer();
@@ -175,7 +175,7 @@ export async function DELETE(
   try {
     const session = await auth();
     
-    if (!session || (session.user as any).role !== 'admin') {
+    if (!session || (session.user as { role?: string } | undefined)?.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }

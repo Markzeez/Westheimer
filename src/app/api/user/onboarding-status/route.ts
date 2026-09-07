@@ -18,7 +18,7 @@ export async function GET() {
     const { data: user, error } = await supabase
       .from('users')
       .select('onboarding_completed')
-      .eq('id', (session.user as any).id)
+      .eq('id', session.user.id)
       .single();
 
     if (error) {

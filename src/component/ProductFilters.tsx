@@ -41,7 +41,6 @@ interface FilterState {
 }
 
 type FilterKey = keyof FilterState;
-type FilterValue = FilterState[FilterKey];
 
 interface ProductFiltersProps {
   onFilterChange?: (filters: FilterState) => void;

@@ -37,15 +37,6 @@ type CloudinaryUploadOptions = {
   transformation: CloudinaryTransformation[];
   public_id?: string;
 };
-type CloudinaryUploadResult = {
-  secure_url: string;
-  public_id: string;
-  width: number;
-  height: number;
-  format: string;
-  bytes: number;
-};
-
 export async function uploadToCloudinary(
   file: Buffer | string,
   options: {

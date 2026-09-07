@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { X, Plus, Minus, Trash2, Heart, ArrowLeft, Gift, Shield, Truck, RotateCcw } from 'lucide-react';
+import Image from 'next/image';
+import { Plus, Minus, Trash2, Heart, ArrowLeft, Gift, Shield, Truck, RotateCcw } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useWishlistStore } from '@/stores/cartStore';
 import { Header } from '@/component/Header';
@@ -67,7 +68,7 @@ export default function CartPage() {
                         <div className="flex gap-4 sm:gap-6">
                           {/* Product Image */}
                           <Link href={`/products/${item.productId}`} className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden">
-                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                            <Image src={item.image} alt={item.name} fill sizes="(max-width: 640px) 96px, 128px" className="object-cover" />
                           </Link>
 
                           {/* Product Info */}

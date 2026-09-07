@@ -153,6 +153,16 @@ export interface WishlistItem {
   addedAt: string;
 }
 
+interface WishlistRow {
+  product_id: string;
+  created_at: string;
+  product: Array<{
+    name?: string;
+    price?: number;
+    images?: Array<{ url?: string }>;
+  }>;
+}
+
 interface WishlistState {
   items: WishlistItem[];
   isSyncing: boolean;
@@ -216,11 +226,11 @@ export const useWishlistStore = create<WishlistState>()(
             .eq('user_id', user.id);
 
           if (wishlist) {
-            const items = wishlist.map((w: any) => ({
+            const items = wishlist.map((w: WishlistRow) => ({
               productId: w.product_id,
-              name: w.product?.name || '',
-              price: w.product?.price || 0,
-              image: w.product?.images?.[0]?.url || '',
+              name: w.product?.[0]?.name || '',
+              price: w.product?.[0]?.price || 0,
+              image: w.product?.[0]?.images?.[0]?.url || '',
               addedAt: w.created_at,
             }));
             set({ items });

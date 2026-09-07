@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -34,16 +34,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!orderId) {
-      router.push('/account?tab=orders');
-      return;
-    }
-
-    fetchOrder();
-  }, [orderId, router]);
-
-  const fetchOrder = async () => {
+  const fetchOrder = useCallback(async () => {
     try {
       // In real app: const res = await fetch(`/api/orders/${orderId}`);
       // Mock data
@@ -74,7 +65,16 @@ export default function OrderDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [orderId, router]);
+
+  useEffect(() => {
+    if (!orderId) {
+      router.push('/account?tab=orders');
+      return;
+    }
+
+    fetchOrder();
+  }, [orderId, router, fetchOrder]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);

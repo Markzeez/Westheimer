@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Expand, X } from 'lucide-react';
+import Image from 'next/image';
 
 interface ProductImageCarouselProps {
   images: Array<{ url: string; alt: string; isPrimary?: boolean }>;
@@ -108,10 +109,12 @@ export function ProductImageCarousel({
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-            <img
+            <Image
               src={currentImage.url}
               alt={currentImage.alt}
+              fill
               className="w-full h-full object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
               loading={currentIndex === 0 ? 'eager' : 'lazy'}
             />
             
@@ -180,10 +183,12 @@ export function ProductImageCarousel({
               aria-label={`View image ${index + 1}`}
               aria-current={index === currentIndex ? 'true' : 'false'}
             >
-              <img
+              <Image
                 src={image.url}
                 alt={image.alt}
+                fill
                 className="w-full h-full object-cover"
+                sizes="80px"
                 loading="lazy"
               />
               {image.isPrimary && (
@@ -234,9 +239,11 @@ export function ProductImageCarousel({
               className="max-w-[90vw] max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
-              <img
+              <Image
                 src={currentImage.url}
                 alt={currentImage.alt}
+                width={1200}
+                height={1200}
                 className="max-w-[90vw] max-h-[90vh] object-contain"
               />
             </motion.div>
@@ -262,10 +269,12 @@ export function ProductImageCarousel({
                   }`}
                   aria-label={`View image ${index + 1}`}
                 >
-                  <img
+                  <Image
                     src={image.url}
                     alt={image.alt}
+                    fill
                     className="w-full h-full object-cover"
+                    sizes="64px"
                   />
                 </button>
               ))}

@@ -2,7 +2,8 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ChevronRight, Mail, Shield, Truck, RotateCcw, Star, Package } from 'lucide-react';
+import Image from 'next/image';
+import { ChevronRight, Shield, Truck, RotateCcw, Star, Package } from 'lucide-react';
 
 const features = [
   { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500' },
@@ -86,10 +87,12 @@ export function HeroSection() {
             className="relative"
           >
             <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop"
                 alt="Modern living room with premium furniture"
                 className="w-full h-full object-cover"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary-600/10 to-transparent" />
             </div>
