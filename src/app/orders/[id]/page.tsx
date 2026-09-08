@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, Truck, MapPin, CreditCard, Clock, CheckCircle, Package, XCircle, RotateCcw, AlertCircle, Printer, FileText } from 'lucide-react';
+import Image from 'next/image';
+import { ChevronLeft, Truck, MapPin, CreditCard, Clock, CheckCircle, Package,  AlertCircle, Printer } from 'lucide-react';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
 
@@ -217,7 +218,7 @@ export default function OrderDetailPage() {
                   {order.items.map((item) => (
                     <div key={item._id} className="p-6 flex gap-4">
                       <Link href={`/products/${item._id}`} className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        <Image src={item.image} alt={item.name} fill sizes="96px" className="object-cover" />
                       </Link>
                       <div className="flex-1 min-w-0">
                         <Link href={`/products/${item._id}`}>
