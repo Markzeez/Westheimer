@@ -9,6 +9,7 @@ import { useWishlistStore } from '@/stores/cartStore';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
 
+
 export default function CartPage() {
   const { items, removeItem, updateQuantity, getSubtotal, getTotalItems, closeCart } = useCartStore();
   const { toggleItem, isInWishlist } = useWishlistStore();
