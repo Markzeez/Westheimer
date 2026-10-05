@@ -70,7 +70,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # NextAuth
-NEXTAUTH_SECRET=your-super-secret-key-change-in-production
+AUTH_SECRET=replace-with-a-generated-secret
 NEXTAUTH_URL=http://localhost:3000
 
 # Cloudinary (for image uploads)
@@ -86,7 +86,7 @@ NEXT_PUBLIC_SITE_URL=https://westheimerdesigns.com
 ## 🚀 To Deploy
 
 1. Run the Supabase migration: `supabase/migrations/20240101000000_initial_schema.sql`
-2. Set environment variables in Vercel
+2. Generate a secret with `npx auth secret` and set it as `AUTH_SECRET` in Vercel
 3. Deploy to Vercel
 3. Verify: `/sitemap.xml`, `/robots.txt`, `/site.webmanifest`
 

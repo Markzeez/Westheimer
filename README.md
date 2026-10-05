@@ -53,7 +53,7 @@ cp .env.example .env.local
 
 # Configure your .env.local with:
 # - Supabase credentials
-# - NEXTAUTH_SECRET
+# - AUTH_SECRET (generate with `npx auth secret`)
 # - Cloudinary credentials (optional but recommended)
 
 # Run development server
@@ -98,7 +98,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # NextAuth
-NEXTAUTH_SECRET=your-super-secret-key-change-in-production
+AUTH_SECRET=replace-with-a-generated-secret
 NEXTAUTH_URL=http://localhost:3000
 
 # Cloudinary (for production image uploads)
@@ -107,6 +107,10 @@ CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
 CLOUDINARY_UPLOAD_PRESET=westheimer_products
 ```
+
+Generate the NextAuth secret with `npx auth secret` and set its output as
+`AUTH_SECRET` in `.env.local` and in your Vercel project environment variables.
+Keep the value private and use a different secret for each environment.
 
 ## Project Structure
 

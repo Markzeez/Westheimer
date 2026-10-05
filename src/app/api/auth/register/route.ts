@@ -79,16 +79,19 @@ export async function POST(request: NextRequest) {
     // 3. Create User Profile in the public.users table
     const { data: profile, error: profileError } = await supabaseAdmin
       .from('users')
-      .insert({
-        id: authData.user.id,
-        name,
-        email,
-        phone,
-        address,
-        role: 'user',
-        onboarding_completed: false,
-        onboarding_data: {},
-      })
+      .upsert(
+        {
+          id: authData.user.id,
+          name,
+          email,
+          phone,
+          address,
+          role: 'user',
+          onboarding_completed: false,
+          onboarding_data: {},
+        },
+        { onConflict: 'id' }
+      )
       .select()
       .single();
 

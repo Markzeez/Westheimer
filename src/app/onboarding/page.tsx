@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronRight, ChevronLeft, Check, Sparkles, Home, CreditCard, Bell, User, ArrowRight } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { createSupabaseBrowserClient } from '@/lib/supabase';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
 
@@ -70,21 +69,22 @@ function OnboardingPageContent() {
       if (!session?.user) return;
 
       try {
-        const supabase = createSupabaseBrowserClient();
-        const { data } = await supabase
-          .from('users')
-          .select('onboarding_completed, onboarding_data')
-          .eq('id', session.user.id)
-           .single();
+        const response = await fetch('/api/user/onboarding-status', {
+          cache: 'no-store',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to check onboarding status');
+        }
+        const data = await response.json();
 
-        if (data?.onboarding_completed) {
+        if (!data.needsOnboarding) {
           setCompleted(true);
           // Redirect to intended page or home
           const redirectTo = searchParams?.get('redirect') || '/';
           router.push(redirectTo);
-        } else if (data?.onboarding_data) {
+        } else if (data.onboardingData) {
           // Pre-fill form with saved data
-          setFormData(prev => ({ ...prev, ...data.onboarding_data }));
+          setFormData(prev => ({ ...prev, ...data.onboardingData }));
         }
       } catch (error) {
         console.error('Error checking onboarding status:', error);
@@ -100,23 +100,12 @@ function OnboardingPageContent() {
     if (!session?.user) return;
 
     try {
-      const supabase = createSupabaseBrowserClient();
-      const updateData: Record<string, unknown> = {
-        onboarding_data: formData,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (final) {
-        updateData.onboarding_completed = true;
-        updateData.onboarding_completed_at = new Date().toISOString();
-      }
-
-      const { error } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', session.user.id);
-
-      if (error) throw error;
+      const response = await fetch('/api/user/complete-onboarding', {
+        method: final ? 'POST' : 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) throw new Error('Failed to save onboarding progress');
 
       if (final) {
         setCompleted(true);

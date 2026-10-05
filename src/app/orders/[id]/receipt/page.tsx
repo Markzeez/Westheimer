@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { createSupabaseServerClient } from '@/lib/supabase';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 import { auth } from '@/lib/auth';
 import ReceiptView from './receipt-view';
 
@@ -32,16 +32,25 @@ export interface OrderData {
   user_id: string;
 }
 
-async function getOrder(id: string): Promise<OrderData | null> {
-  const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase
+async function getOrder(
+  id: string,
+  userId: string,
+  isAdmin: boolean
+): Promise<OrderData | null> {
+  const supabaseAdmin = createSupabaseAdminClient();
+  let query = supabaseAdmin
     .from('orders')
     .select(`
       *,
       items:order_items(*)
     `)
-    .eq('id', id)
-    .single();
+    .eq('id', id);
+
+  if (!isAdmin) {
+    query = query.eq('user_id', userId);
+  }
+
+  const { data, error } = await query.single();
 
   if (error || !data) return null;
   return data as OrderData;
@@ -52,8 +61,20 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const session = await auth();
+  const userId = (session?.user as { id?: string; role?: string } | undefined)?.id;
+
+  if (!userId) {
+    return {
+      title: 'Receipt Not Found',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const isAdmin =
+    (session?.user as { role?: string } | undefined)?.role === 'admin';
   const { id } = await params;
-  const order = await getOrder(id);
+  const order = await getOrder(id, userId, isAdmin);
 
   if (!order) {
     return {
@@ -74,24 +95,18 @@ export default async function ReceiptPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
+  const userId = (session?.user as { id?: string; role?: string } | undefined)?.id;
+  const isAdmin =
+    (session?.user as { role?: string } | undefined)?.role === 'admin';
 
-  if (!session) {
+  if (!userId) {
     notFound();
   }
 
   const { id } = await params;
-  const order = await getOrder(id);
+  const order = await getOrder(id, userId, isAdmin);
 
   if (!order) {
-    notFound();
-  }
-
-  // Check if user owns this order or is admin
-  const userId = (session.user as { id: string; role: string }).id;
-  const userRole = (session.user as { id: string; role: string }).role;
-  const orderUserId = order.user_id;
-
-  if (userRole !== 'admin' && orderUserId !== userId) {
     notFound();
   }
 
@@ -99,7 +114,7 @@ export default async function ReceiptPage({
     <ReceiptView
       order={order}
       id={id}
-      userEmail={session.user?.email ?? ''}
+      userEmail={session?.user?.email ?? ''}
     />
   );
 }

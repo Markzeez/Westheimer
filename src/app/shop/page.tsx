@@ -50,6 +50,7 @@ import { Header } from "@/component/Header";
 import { Footer } from "@/component/Footer";
 import {  X, Grid, List } from "lucide-react";
 import { generateProductListSchema } from "@/lib/seo/structured-data";
+import { createSupabaseServerClient } from "@/lib/supabase";
 
 interface Product {
   id: string;
@@ -81,23 +82,65 @@ const CATEGORIES = [
 ];
 
 async function fetchProducts(params: URLSearchParams): Promise<ShopPageData> {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/products?${params}`, {
-      next: { revalidate: 60 },
-    });
-    const json = await res.json();
-    return {
-      products: json.data || [],
-      pagination: json.pagination || { page: 1, limit: 12, total: 0, totalPages: 1 },
-      categories: CATEGORIES,
-    };
-  } catch {
-    return {
-      products: [],
-      pagination: { page: 1, limit: 12, total: 0, totalPages: 1 },
-      categories: CATEGORIES,
-    };
+  const page = Math.max(1, Number.parseInt(params.get('page') || '1', 10) || 1);
+  const limit = 12;
+  const sort = {
+    'price-low': { column: 'price', ascending: true },
+    'price-high': { column: 'price', ascending: false },
+    newest: { column: 'created_at', ascending: false },
+    popular: { column: 'review_count', ascending: false },
+    rating: { column: 'ratings', ascending: false },
+  }[params.get('sortBy') || ''] || { column: 'created_at', ascending: false };
+  const supabase = createSupabaseServerClient();
+
+  let query = supabase
+    .from('products')
+    .select('*', { count: 'exact' })
+    .eq('is_active', true)
+    .order(sort.column, { ascending: sort.ascending })
+    .range((page - 1) * limit, page * limit - 1);
+
+  const category = params.get('category');
+  const minPrice = params.get('minPrice');
+  const maxPrice = params.get('maxPrice');
+  const search = params.get('search');
+
+  if (category) query = query.eq('category', category);
+  if (params.get('isFeatured') === 'true') query = query.eq('is_featured', true);
+  if (params.get('inStock') === 'true') query = query.gt('inventory', 0);
+  if (minPrice) query = query.gte('price', Number.parseFloat(minPrice));
+  if (maxPrice) query = query.lte('price', Number.parseFloat(maxPrice));
+  if (search) query = query.textSearch('name,description', search);
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    console.error('Failed to fetch shop products:', error);
+    throw new Error('Failed to fetch shop products');
   }
+
+  return {
+    products: (data || []).map((product) => ({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      category: product.category,
+      images: product.images,
+      inventory: product.inventory,
+      ratings: product.ratings,
+      reviewCount: product.review_count,
+      isFeatured: product.is_featured,
+      description: product.description,
+      features: product.features,
+    })),
+    pagination: {
+      page,
+      limit,
+      total: count || 0,
+      totalPages: Math.max(1, Math.ceil((count || 0) / limit)),
+    },
+    categories: CATEGORIES,
+  };
 }
 
 export default async function ShopPage({

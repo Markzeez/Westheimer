@@ -1,28 +1,29 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { createSupabaseServerClient } from '@/lib/supabase';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
 export async function POST() {
   try {
     const session = await auth();
+    const userId = (session?.user as { id?: string } | undefined)?.id;
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
-    const supabase = createSupabaseServerClient();
+    const supabaseAdmin = createSupabaseAdminClient();
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('users')
       .update({
         onboarding_completed: true,
         onboarding_completed_at: new Date().toISOString(),
         onboarding_data: { skipped: true },
       })
-      .eq('id', session.user.id);
+      .eq('id', userId);
 
     if (error) {
       console.error('Error skipping onboarding:', error);

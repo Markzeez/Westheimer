@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { createSupabaseServerClient } from '@/lib/supabase';
+import { createSupabaseAdminClient } from '@/lib/supabase';
 
-export async function POST(request: NextRequest) {
+async function updateOnboarding(request: NextRequest, complete: boolean) {
   try {
     const session = await auth();
+    const userId = (session?.user as { id?: string } | undefined)?.id;
 
-    if (!session?.user) {
+    if (!userId) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
@@ -16,23 +17,26 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const onboardingData = body;
 
-    const supabase = createSupabaseServerClient();
+    const supabaseAdmin = createSupabaseAdminClient();
+    const updateData = complete
+      ? {
+          onboarding_completed: true,
+          onboarding_completed_at: new Date().toISOString(),
+          onboarding_data: onboardingData,
+        }
+      : { onboarding_data: onboardingData };
 
-    const { data: user, error } = await supabase
+    const { data: user, error } = await supabaseAdmin
       .from('users')
-      .update({
-        onboarding_completed: true,
-        onboarding_completed_at: new Date().toISOString(),
-        onboarding_data: onboardingData,
-      })
-      .eq('id', session.user.id)
+      .update(updateData)
+      .eq('id', userId)
       .select()
       .single();
 
     if (error) {
-      console.error('Error completing onboarding:', error);
+      console.error('Error updating onboarding:', error);
       return NextResponse.json(
-        { error: 'Failed to complete onboarding' },
+        { error: 'Failed to save onboarding' },
         { status: 500 }
       );
     }
@@ -45,10 +49,18 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Complete onboarding error:', error);
+    console.error('Onboarding update error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
   }
+}
+
+export async function PATCH(request: NextRequest) {
+  return updateOnboarding(request, false);
+}
+
+export async function POST(request: NextRequest) {
+  return updateOnboarding(request, true);
 }
