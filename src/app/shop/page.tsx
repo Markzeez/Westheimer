@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 
 import { ProductGrid } from "@/component/ProductGrid";
 import { ProductFilters } from "@/component/ProductFilters";
-import { Pagination } from "@/component/Pagination";
+import { ShopPagination } from "@/component/ShopPagination";
 import { Header } from "@/component/Header";
 import { Footer } from "@/component/Footer";
 import {  X, Grid, List } from "lucide-react";
@@ -297,13 +297,10 @@ export default async function ShopPage({
                   
                   {data.pagination.totalPages > 1 && (
                     <div className="mt-8 flex justify-center">
-                      <Pagination
+                      <ShopPagination
                         currentPage={data.pagination.page}
                         totalPages={data.pagination.totalPages}
-                        setCurrentPage={(page) => {
-                          const newParams = new URLSearchParams({...Object.fromEntries(urlParams), page: String(page)});
-                          window.location.href = `/shop?${newParams.toString()}`;
-                        }}
+                        queryString={urlParams.toString()}
                       />
                     </div>
                   )}

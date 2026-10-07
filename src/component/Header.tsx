@@ -55,6 +55,7 @@ export function Header() {
             <Link href="/shop" className="text-gray-700 hover:text-gray-900 font-medium">Shop</Link>
             <Link href="/categories" className="text-gray-700 hover:text-gray-900 font-medium">Categories</Link>
             <Link href="/about" className="text-gray-700 hover:text-gray-900 font-medium">About</Link>
+            <Link href="/faq" className="text-gray-700 hover:text-gray-900 font-medium">FAQ</Link>
             <Link href="/contact" className="text-gray-700 hover:text-gray-900 font-medium">Contact</Link>
           </nav>
 
@@ -192,6 +193,7 @@ export function Header() {
                 <Link href="/shop" className="block text-gray-700 hover:text-gray-900 font-medium">Shop</Link>
                 <Link href="/categories" className="block text-gray-700 hover:text-gray-900 font-medium">Categories</Link>
                 <Link href="/about" className="block text-gray-700 hover:text-gray-900 font-medium">About</Link>
+                <Link href="/faq" className="block text-gray-700 hover:text-gray-900 font-medium">FAQ</Link>
                 <Link href="/contact" className="block text-gray-700 hover:text-gray-900 font-medium">Contact</Link>
               </nav>
               <div className="mt-8 pt-8 border-t border-gray-200">

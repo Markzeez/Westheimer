@@ -135,32 +135,53 @@ const mockOrders: Order[] = [
   },
 ];
 
-const notificationSettings = [
+const defaultNotificationPreferences = {
+  orderUpdates: true,
+  promotionalEmails: true,
+  priceDropAlerts: true,
+  newsletter: false,
+};
+
+type NotificationPreferences = typeof defaultNotificationPreferences;
+type NotificationPreferenceKey = keyof NotificationPreferences;
+
+const notificationSettings: {
+  key: NotificationPreferenceKey;
+  label: string;
+  desc: string;
+}[] = [
   {
+    key: 'orderUpdates',
     label: 'Order Updates',
     desc: 'Shipping confirmations and delivery updates',
   },
   {
+    key: 'promotionalEmails',
     label: 'Promotional Emails',
     desc: 'New arrivals, sales, and special offers',
   },
   {
+    key: 'priceDropAlerts',
     label: 'Price Drop Alerts',
     desc: 'Get notified when wishlist items go on sale',
   },
   {
+    key: 'newsletter',
     label: 'Newsletter',
     desc: 'Weekly design inspiration and tips',
   },
 ];
 
 export default function AccountPage() {
-  const { data: session, status, update } = useSession();
+  const { data: session, status } = useSession();
   // const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const [orders, setOrders] = useState<Order[]>([]);
   const [saving, setSaving] = useState(false);
+  const [savingPreferences, setSavingPreferences] = useState(false);
+  const [notificationPreferences, setNotificationPreferences] =
+    useState<NotificationPreferences>(defaultNotificationPreferences);
   const [isLoading, setIsLoading] = useState(true);
 
   const profileForm = useForm<ProfileForm>({
@@ -191,19 +212,41 @@ export default function AccountPage() {
    * finished loading the session.
    */
   useEffect(() => {
-    if (!session?.user) {
+    if (status !== 'authenticated') {
       return;
     }
 
-    const user = session.user as ExtendedUser;
+    let cancelled = false;
 
-    profileForm.reset({
-      name: user.name ?? '',
-      email: user.email ?? '',
-      phone: user.phone ?? '',
-      address: user.address ?? '',
-    });
-  }, [session, profileForm]);
+    const loadProfile = async () => {
+      try {
+        const response = await fetch('/api/user/profile', { cache: 'no-store' });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to load profile');
+        }
+        if (cancelled) return;
+
+        profileForm.reset({
+          name: result.profile.name ?? '',
+          email: result.profile.email ?? '',
+          phone: result.profile.phone ?? '',
+          address: result.profile.address ?? '',
+        });
+        setNotificationPreferences(
+          result.profile.notification_preferences ?? defaultNotificationPreferences
+        );
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+        if (!cancelled) toast.error('Failed to load profile information');
+      }
+    };
+
+    void loadProfile();
+    return () => {
+      cancelled = true;
+    };
+  }, [status, profileForm]);
 
   /*
    * Fetch account data.
@@ -253,32 +296,26 @@ export default function AccountPage() {
     setSaving(true);
 
     try {
-      /*
-       * Replace this section with your real API request.
-       *
-       * const response = await fetch('/api/user/profile', {
-       *   method: 'PUT',
-       *   headers: {
-       *     'Content-Type': 'application/json',
-       *   },
-       *   body: JSON.stringify(data),
-       * });
-       *
-       * if (!response.ok) {
-       *   throw new Error('Failed to update profile');
-       * }
-       */
-
-      // const currentUser = session.user as ExtendedUser;
-
-      await update({
-        name: data.name,
-        email: data.email,
-        phone: data.phone ?? '',
-        address: data.address ?? '',
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          phone: data.phone ?? '',
+          address: data.address ?? '',
+        }),
       });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to update profile');
+      }
 
-      profileForm.reset(data);
+      profileForm.reset({
+        name: result.profile.name,
+        email: result.profile.email,
+        phone: result.profile.phone ?? '',
+        address: result.profile.address ?? '',
+      });
 
       toast.success('Profile updated successfully!');
     } catch (error) {
@@ -286,6 +323,35 @@ export default function AccountPage() {
       toast.error('Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleNotificationPreferenceChange = async (
+    key: NotificationPreferenceKey,
+    checked: boolean
+  ) => {
+    const previousPreferences = notificationPreferences;
+    const nextPreferences = { ...previousPreferences, [key]: checked };
+    setNotificationPreferences(nextPreferences);
+    setSavingPreferences(true);
+
+    try {
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationPreferences: nextPreferences }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to save notification preferences');
+      }
+      toast.success('Notification preferences saved');
+    } catch (error) {
+      console.error('Notification preference update failed:', error);
+      setNotificationPreferences(previousPreferences);
+      toast.error('Failed to save notification preferences');
+    } finally {
+      setSavingPreferences(false);
     }
   };
 
@@ -620,6 +686,7 @@ export default function AccountPage() {
                             <input
                               id="email"
                               type="email"
+                              readOnly
                               {...profileForm.register('email')}
                               className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                             />
@@ -968,7 +1035,7 @@ export default function AccountPage() {
                       </h2>
 
                       <div className="space-y-4">
-                        {notificationSettings.map((item, index) => (
+                        {notificationSettings.map((item) => (
                           <label
                             key={item.label}
                             className="flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-gray-50 p-4"
@@ -985,7 +1052,14 @@ export default function AccountPage() {
 
                             <input
                               type="checkbox"
-                              defaultChecked={index < 2}
+                              checked={notificationPreferences[item.key]}
+                              disabled={savingPreferences}
+                              onChange={(event) =>
+                                void handleNotificationPreferenceChange(
+                                  item.key,
+                                  event.target.checked
+                                )
+                              }
                               className="h-5 w-5 rounded border-gray-300 text-black focus:ring-primary-500"
                             />
                           </label>

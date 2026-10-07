@@ -253,6 +253,8 @@ CREATE POLICY "Anyone can view active products"
 ON public.products FOR SELECT
 USING (is_active = TRUE);
 
+GRANT SELECT ON public.products TO anon, authenticated;
+
 DROP POLICY IF EXISTS "Admins can manage products" ON public.products;
 CREATE POLICY "Admins can manage products"
 ON public.products FOR ALL TO authenticated

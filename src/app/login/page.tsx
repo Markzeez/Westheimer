@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Package } from 'lucide-react';
+import { toast } from '@/components/ToastProvider';
 
 function LoginPageContent() {
   const router = useRouter();
@@ -34,6 +35,8 @@ function LoginPageContent() {
       if (result?.error) {
         setFormError('Invalid email or password');
       } else if (result?.ok) {
+        toast.success('Signed in successfully');
+
         // Check onboarding status after successful login
         try {
           const res = await fetch('/api/user/onboarding-status');
