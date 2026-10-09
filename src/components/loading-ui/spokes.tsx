@@ -17,7 +17,7 @@ export function Spokes(props: SVGProps<SVGSVGElement>) {
           y1="5"
           x2="24"
           y2="12"
-          stroke="currentColor"
+          stroke="#1F2937"
           strokeWidth="3"
           strokeLinecap="round"
           opacity={1 - index * 0.1}

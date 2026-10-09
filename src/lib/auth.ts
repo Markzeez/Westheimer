@@ -10,10 +10,35 @@ export type AuthenticatedUser = {
   [key: string]: unknown;
 };
 
+const BOOTSTRAP_ADMIN_EMAIL = "markzeezibro739@gmail.com";
+
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
   const { userId } = await auth();
   if (!userId) return null;
 
+  const clerkUser = await currentUser();
+  if (!clerkUser || clerkUser.id !== userId) return null;
+
+  const primaryEmail = clerkUser.emailAddresses.find(
+    (email) => email.id === clerkUser.primaryEmailAddressId
+  );
+  const verifiedEmails = clerkUser.emailAddresses.filter(
+    (email) => email.verification?.status === "verified"
+  );
+  const bootstrapAdminEmail = verifiedEmails.find(
+    (email) => email.emailAddress.trim().toLowerCase() === BOOTSTRAP_ADMIN_EMAIL
+  );
+  const accountEmail =
+    primaryEmail?.verification?.status === "verified"
+      ? primaryEmail
+      : bootstrapAdminEmail;
+  if (!accountEmail) return null;
+
+  const role =
+    bootstrapAdminEmail !== undefined ||
+    clerkUser.publicMetadata.role === "admin"
+      ? "admin"
+      : "user";
   const supabase = createSupabaseAdminClient();
   const { data: linkedProfile, error: linkedProfileError } = await supabase
     .from("users")
@@ -22,20 +47,14 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
     .maybeSingle();
 
   if (linkedProfileError) throw linkedProfileError;
-  if (linkedProfile) return linkedProfile as AuthenticatedUser;
-
-  const clerkUser = await currentUser();
-  if (!clerkUser || clerkUser.id !== userId) return null;
-
-  const primaryEmail = clerkUser.emailAddresses.find(
-    (email) => email.id === clerkUser.primaryEmailAddressId
-  );
-  if (!primaryEmail || primaryEmail.verification?.status !== "verified") return null;
+  if (linkedProfile) {
+    return { ...linkedProfile, role } as AuthenticatedUser;
+  }
 
   const { data: existingProfile, error: existingProfileError } = await supabase
     .from("users")
     .select("*")
-    .eq("email", primaryEmail.emailAddress)
+    .eq("email", accountEmail.emailAddress)
     .maybeSingle();
 
   if (existingProfileError) throw existingProfileError;
@@ -53,7 +72,7 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
       .single();
 
     if (error) throw error;
-    return linked as AuthenticatedUser;
+    return { ...linked, role } as AuthenticatedUser;
   }
 
   const { data: profile, error } = await supabase
@@ -64,9 +83,9 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
       name:
         clerkUser.fullName ||
         [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") ||
-        primaryEmail.emailAddress.split("@")[0],
-      email: primaryEmail.emailAddress,
-      role: "user",
+        accountEmail.emailAddress.split("@")[0],
+      email: accountEmail.emailAddress,
+      role,
       onboarding_completed: false,
       onboarding_data: {},
     })
@@ -74,7 +93,7 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
     .single();
 
   if (error) throw error;
-  return profile as AuthenticatedUser;
+  return { ...profile, role } as AuthenticatedUser;
 }
 
 export async function getAuthenticatedAdmin(): Promise<AuthenticatedUser | null> {

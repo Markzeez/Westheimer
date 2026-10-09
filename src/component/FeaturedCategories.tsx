@@ -7,7 +7,7 @@ import { ChevronRight } from 'lucide-react';
 
 const categories = [
   { name: 'Living Room', slug: 'living-room', image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=400&fit=crop', count: 42 },
-  { name: 'Bedroom', slug: 'bedroom', image: 'https://images.unsplash.com/photo-1588880383507-318b05e3d9dc?w=600&h=400&fit=crop', count: 28 },
+  { name: 'Bedroom', slug: 'bedroom', image: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&h=400&fit=crop', count: 28 },
   { name: 'Dining Room', slug: 'dining-room', image: 'https://images.unsplash.com/photo-1616046229478-9901c5536a45?w=600&h=400&fit=crop', count: 19 },
   { name: 'Office', slug: 'office', image: 'https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600&h=400&fit=crop', count: 31 },
   { name: 'Outdoor', slug: 'outdoor', image: 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=600&h=400&fit=crop', count: 15 },

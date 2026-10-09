@@ -27,7 +27,7 @@ A complete Next.js 15 furniture e-commerce application with admin dashboard, bui
 - **Framework**: Next.js 15 (App Router) + TypeScript
 - **Styling**: Tailwind CSS v4 + Framer Motion
 - **Database**: **Supabase (PostgreSQL)** + Row Level Security
-- **Auth**: Clerk (authentication) + Supabase (database-backed profiles and roles)
+- **Auth**: Clerk (authentication, profile metadata, onboarding, and authorization) + Supabase (commerce and application data)
 - **State**: Zustand (cart/wishlist) + TanStack Query
 - **Forms**: React Hook Form + Zod validation
 - **Images**: Cloudinary (auto-optimization, CDN)
@@ -74,13 +74,15 @@ npm run dev
 4. Apply `supabase/migrations/20261009063646_clerk_identity_mapping.sql` before starting the app. This preserves existing profile UUIDs and order references while enabling Clerk identity links.
 5. Keep the Supabase service-role key server-side; authenticated database operations are performed by server routes after Clerk authorization.
 6. Apply `supabase/migrations/20261009080108_add_paystack_payment.sql` before enabling checkout. It adds the NGN payment currency and the server-only, idempotent payment settlement function.
+7. If the shop reports that `public.products` is missing from the schema cache, verify the table with `select to_regclass('public.products');` in SQL Editor. If the result is `NULL`, run the initial schema SQL in step 3. If the table exists, refresh PostgREST with `NOTIFY pgrst, 'reload schema';`. Make sure `.env.local` points to that same project.
 
 ### Clerk Setup
 
 1. Create a [Clerk application](https://clerk.com), configure the sign-in methods you want to offer, and enable the name fields if you want Clerk to populate profile names at signup.
 2. Add `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` to `.env.local` and your deployment environment.
-3. Existing Supabase profiles are linked to Clerk on first sign-in when the verified primary email matches. New accounts receive a profile with the default `user` role.
-4. Admin authorization continues to use the server-side `role` field in `public.users`; do not grant admin access through user-editable Clerk metadata.
+3. Existing Supabase profiles are linked to Clerk on first sign-in when the verified primary email matches. Supabase profile UUIDs remain in place to preserve commerce ownership.
+4. Admin authorization uses Clerk server-side `publicMetadata.role`; the verified account `markzeezibro739@gmail.com` is the protected bootstrap administrator. Never authorize from user-editable `unsafeMetadata` or the mirrored Supabase profile role.
+5. Onboarding progress, completion, address, phone, and notification preferences are stored in Clerk private metadata.
 
 ### Paystack Setup
 
@@ -100,10 +102,8 @@ Without Cloudinary, images are stored as base64 (development only).
 
 ### Admin Access
 
-1. Register at `/register`
-2. In Supabase Dashboard → Table Editor → `users` table:
-   - Find your user row
-   - Change `role` from `user` to `admin`
+1. Sign in to Clerk with the verified `markzeezibro739@gmail.com` account for bootstrap admin access.
+2. For additional administrators, use the admin user-management screen to assign the `admin` role. The role is written to Clerk server-side public metadata; the protected bootstrap admin cannot be demoted or deleted there.
 3. Access `/admin` dashboard
 
 ## Environment Variables

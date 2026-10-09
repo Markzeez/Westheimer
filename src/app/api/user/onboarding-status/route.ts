@@ -1,37 +1,23 @@
 import { NextResponse } from 'next/server';
-import { getAuthenticatedUser } from '@/lib/auth';
-import { createSupabaseAdminClient } from '@/lib/supabase';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 
 export async function GET() {
   try {
-    const user = await getAuthenticatedUser();
-
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json(
         { needsOnboarding: false, error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
-    const supabaseAdmin = createSupabaseAdminClient();
-
-    const { data: profile, error } = await supabaseAdmin
-      .from('users')
-      .select('onboarding_completed, onboarding_data')
-      .eq('id', user.id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching onboarding status:', error);
-      return NextResponse.json(
-        { needsOnboarding: false, error: 'Failed to check onboarding status' },
-        { status: 500 }
-      );
-    }
+    const clerk = await clerkClient();
+    const user = await clerk.users.getUser(userId);
+    const metadata = user.privateMetadata;
 
     return NextResponse.json({
-      needsOnboarding: !profile?.onboarding_completed,
-      onboardingData: profile?.onboarding_data ?? {},
+      needsOnboarding: metadata.onboardingCompleted !== true,
+      onboardingData: metadata.onboardingData ?? {},
     });
   } catch (error) {
     console.error('Onboarding status check error:', error);

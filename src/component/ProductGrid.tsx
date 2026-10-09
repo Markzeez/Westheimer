@@ -12,6 +12,7 @@ interface Product {
   ratings: number;
   reviewCount: number;
   isFeatured?: boolean;
+  color?: string | null;
 }
 
 interface ProductGridProps {

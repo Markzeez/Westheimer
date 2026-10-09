@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth, clerkClient, currentUser } from '@clerk/nextjs/server';
 import { z } from 'zod';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
@@ -22,72 +23,104 @@ const profileUpdateSchema = z
     message: 'At least one profile field is required',
   });
 
-async function getAuthenticatedUserId() {
-  const user = await getAuthenticatedUser();
-  return user?.id ?? null;
+function toProfile(user: NonNullable<Awaited<ReturnType<typeof currentUser>>>) {
+  const email = user.emailAddresses.find(
+    (address) => address.id === user.primaryEmailAddressId
+  );
+  if (!email) throw new Error('Clerk user has no primary email address');
+
+  return {
+    name: user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' '),
+    email: email.emailAddress,
+    phone: typeof user.privateMetadata.phone === 'string' ? user.privateMetadata.phone : '',
+    address: typeof user.privateMetadata.address === 'string' ? user.privateMetadata.address : '',
+    role:
+      email.emailAddress.toLowerCase() === 'markzeezibro739@gmail.com' ||
+      user.publicMetadata.role === 'admin'
+        ? 'admin'
+        : 'user',
+    notification_preferences: user.privateMetadata.notificationPreferences ?? {
+      orderUpdates: true,
+      promotionalEmails: true,
+      priceDropAlerts: true,
+      newsletter: true,
+    },
+  };
 }
 
 export async function GET() {
   try {
-    const userId = await getAuthenticatedUserId();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: profile, error } = await supabaseAdmin
-      .from('users')
-      .select('name, email, phone, address, role, notification_preferences')
-      .eq('id', userId)
-      .single();
-
-    if (error || !profile) {
-      console.error('Error fetching user profile:', error);
-      return NextResponse.json({ error: 'Failed to load profile' }, { status: 500 });
+    const clerkUser = await currentUser();
+    if (!clerkUser || clerkUser.id !== userId) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     return NextResponse.json(
-      { profile },
+      { profile: toProfile(clerkUser) },
       { headers: { 'Cache-Control': 'no-store' } }
     );
   } catch (error) {
     console.error('User profile request failed:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to load profile' }, { status: 500 });
   }
 }
 
 export async function PATCH(request: NextRequest) {
   try {
-    const userId = await getAuthenticatedUserId();
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const body: unknown = await request.json();
-    const parsed = profileUpdateSchema.safeParse(body);
+    const parsed = profileUpdateSchema.safeParse(await request.json());
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid profile data' }, { status: 400 });
     }
 
-    const { notificationPreferences, ...profileFields } = parsed.data;
-    const updateData = {
-      ...profileFields,
-      ...(notificationPreferences
-        ? { notification_preferences: notificationPreferences }
-        : {}),
+    const linkedProfile = await getAuthenticatedUser();
+    if (!linkedProfile) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+    }
+
+    const clerk = await clerkClient();
+    const existingUser = await clerk.users.getUser(userId);
+    const { name, phone, address, notificationPreferences } = parsed.data;
+    if (name !== undefined) {
+      const [firstName, ...lastNameParts] = name.split(/\s+/);
+      await clerk.users.updateUser(userId, {
+        firstName,
+        lastName: lastNameParts.join(' '),
+      });
+    }
+
+    const privateMetadata = {
+      ...existingUser.privateMetadata,
+      ...(phone !== undefined ? { phone } : {}),
+      ...(address !== undefined ? { address } : {}),
+      ...(notificationPreferences ? { notificationPreferences } : {}),
     };
+    await clerk.users.updateUserMetadata(userId, { privateMetadata });
 
-    const supabaseAdmin = createSupabaseAdminClient();
-    const { data: profile, error } = await supabaseAdmin
+    const profile = toProfile(await clerk.users.getUser(userId));
+    const { error } = await createSupabaseAdminClient()
       .from('users')
-      .update(updateData)
-      .eq('id', userId)
-      .select('name, email, phone, address, role, notification_preferences')
-      .single();
+      .update({
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        address: profile.address,
+        notification_preferences: profile.notification_preferences,
+      })
+      .eq('id', linkedProfile.id);
 
-    if (error || !profile) {
-      console.error('Error updating user profile:', error);
-      return NextResponse.json({ error: 'Failed to save profile' }, { status: 500 });
+    if (error) {
+      console.error('Failed to mirror Clerk profile to app data:', error);
+      return NextResponse.json({ error: 'Profile updated, but app data could not be synchronized' }, { status: 500 });
     }
 
     return NextResponse.json(
@@ -96,6 +129,6 @@ export async function PATCH(request: NextRequest) {
     );
   } catch (error) {
     console.error('User profile update failed:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save profile' }, { status: 500 });
   }
 }

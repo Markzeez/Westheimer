@@ -1,36 +1,26 @@
 import { NextResponse } from 'next/server';
-import { getAuthenticatedUser } from '@/lib/auth';
-import { createSupabaseAdminClient } from '@/lib/supabase';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 
 export async function POST() {
   try {
-    const user = await getAuthenticatedUser();
-
-    if (!user) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
       );
     }
 
-    const supabaseAdmin = createSupabaseAdminClient();
-
-    const { error } = await supabaseAdmin
-      .from('users')
-      .update({
-        onboarding_completed: true,
-        onboarding_completed_at: new Date().toISOString(),
-        onboarding_data: { skipped: true },
-      })
-      .eq('id', user.id);
-
-    if (error) {
-      console.error('Error skipping onboarding:', error);
-      return NextResponse.json(
-        { error: 'Failed to skip onboarding' },
-        { status: 500 }
-      );
-    }
+    const clerk = await clerkClient();
+    const user = await clerk.users.getUser(userId);
+    await clerk.users.updateUserMetadata(userId, {
+      privateMetadata: {
+        ...user.privateMetadata,
+        onboardingCompleted: true,
+        onboardingCompletedAt: new Date().toISOString(),
+        onboardingData: { skipped: true },
+      },
+    });
 
     return NextResponse.json({
       success: true,

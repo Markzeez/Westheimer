@@ -64,6 +64,7 @@ interface Product {
   isFeatured?: boolean;
   description?: string;
   features?: string[];
+  color?: string | null;
 }
 
 interface ShopPageData {
@@ -75,6 +76,13 @@ interface ShopPageData {
     totalPages: number;
   };
   categories: string[];
+}
+
+class ShopProductsUnavailableError extends Error {
+  constructor() {
+    super('Supabase cannot find public.products in the Data API schema.');
+    this.name = 'ShopProductsUnavailableError';
+  }
 }
 
 const CATEGORIES = [
@@ -116,6 +124,9 @@ async function fetchProducts(params: URLSearchParams): Promise<ShopPageData> {
 
   if (error) {
     console.error('Failed to fetch shop products:', error);
+    if (error.code === 'PGRST205') {
+      throw new ShopProductsUnavailableError();
+    }
     throw new Error('Failed to fetch shop products');
   }
 
@@ -132,6 +143,7 @@ async function fetchProducts(params: URLSearchParams): Promise<ShopPageData> {
       isFeatured: product.is_featured,
       description: product.description,
       features: product.features,
+      color: product.color,
     })),
     pagination: {
       page,
@@ -169,7 +181,43 @@ export default async function ShopPage({
   if (params.search) urlParams.set('search', params.search as string);
   if (params.sortBy && params.sortBy !== 'default') urlParams.set('sortBy', params.sortBy as string);
 
-  const data = await fetchProducts(urlParams);
+  let data: ShopPageData;
+  try {
+    data = await fetchProducts(urlParams);
+  } catch (error) {
+    if (!(error instanceof ShopProductsUnavailableError)) throw error;
+
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="mx-auto max-w-3xl px-4 py-20 sm:px-6 lg:px-8">
+          <section
+            role="alert"
+            className="rounded-2xl border border-amber-200 bg-white p-8 shadow-sm"
+          >
+            <h1 className="text-2xl font-bold text-gray-900">
+              Shop database is not ready
+            </h1>
+            <p className="mt-3 text-gray-600">
+              Supabase cannot find <code>public.products</code> in its Data API
+              schema. Apply the initial schema at{' '}
+              <code>supabase/migrations/20240101000000_initial_schema.sql</code>{' '}
+              in the Supabase SQL Editor. If the table already exists, refresh
+              the PostgREST schema cache by running:
+            </p>
+            <pre className="mt-4 overflow-x-auto rounded-lg bg-gray-100 p-4 text-sm text-gray-800">
+              <code>{"NOTIFY pgrst, 'reload schema';"}</code>
+            </pre>
+            <p className="mt-4 text-sm text-gray-500">
+              Confirm the app is configured for the same Supabase project where
+              the schema was applied.
+            </p>
+          </section>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   // Generate product list schema for SEO
   const productListSchema = generateProductListSchema(

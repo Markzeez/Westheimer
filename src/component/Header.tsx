@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, User, Heart, ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
@@ -12,31 +12,13 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (!isSignedIn) {
-      setIsAdmin(false);
-      return;
-    }
-
-    let cancelled = false;
-    const loadRole = async () => {
-      try {
-        const response = await fetch('/api/user/profile', { cache: 'no-store' });
-        if (!response.ok) throw new Error('Failed to load user role');
-        const result = await response.json();
-        if (!cancelled) setIsAdmin(result.profile?.role === 'admin');
-      } catch (error) {
-        console.error('Failed to load user role:', error);
-      }
-    };
-
-    void loadRole();
-    return () => {
-      cancelled = true;
-    };
-  }, [isSignedIn, user?.id]);
+  const isAdmin =
+    user?.publicMetadata.role === 'admin' ||
+    user?.emailAddresses.some(
+      (email) =>
+        email.verification.status === 'verified' &&
+        email.emailAddress.trim().toLowerCase() === 'markzeezibro739@gmail.com'
+    );
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">

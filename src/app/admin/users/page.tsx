@@ -461,6 +461,11 @@ export default function AdminUsersPage() {
             <option value="user">Customer</option>
             <option value="admin">Admin</option>
           </select>
+          {editingUser?.email.toLowerCase() === 'markzeezibro739@gmail.com' && (
+            <p className="mt-1 text-xs text-gray-500">
+              The bootstrap administrator role is protected.
+            </p>
+          )}
         </div>
 
         {/* Users Table */}
@@ -591,6 +596,7 @@ export default function AdminUsersPage() {
                       id="user-email"
                       type="email"
                       required
+                      readOnly={Boolean(editingUser)}
                       autoComplete="email"
                       value={form.email}
                       onChange={(event) =>
@@ -602,6 +608,11 @@ export default function AdminUsersPage() {
                       className="w-full rounded-lg border border-gray-300 px-3 py-2.5 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                       placeholder="john@example.com"
                     />
+                    {editingUser && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Existing account email changes must be completed through Clerk verification.
+                      </p>
+                    )}
                   </div>
 
                   {/* Password */}
@@ -684,6 +695,7 @@ export default function AdminUsersPage() {
                     <select
                       id="user-role"
                       required
+                      disabled={editingUser?.email.toLowerCase() === 'markzeezibro739@gmail.com'}
                       value={form.role}
                       onChange={(event) =>
                         updateForm(

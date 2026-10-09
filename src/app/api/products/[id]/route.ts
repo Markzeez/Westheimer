@@ -56,8 +56,8 @@ export async function PUT(
     
     const updateData: Record<string, unknown> = {};
     
-    const fields = ['name', 'description', 'price', 'category', 'sub_category', 'inventory', 'material', 'color'];
-    fields.forEach(field => {
+    const fields = ['name', 'description', 'price', 'category', 'inventory', 'material', 'color'];
+    fields.forEach((field) => {
       const value = formData.get(field);
       if (value !== null) {
         if (field === 'price') updateData[field] = parseFloat(value as string);
@@ -65,12 +65,17 @@ export async function PUT(
         else updateData[field] = value;
       }
     });
+    const subCategory = formData.get('subCategory');
+    if (subCategory !== null) updateData.sub_category = subCategory;
 
-    const booleanFields = ['is_active', 'is_featured'];
-    booleanFields.forEach(field => {
-      const value = formData.get(field);
+    const booleanFields = [
+      ['isActive', 'is_active'],
+      ['isFeatured', 'is_featured'],
+    ] as const;
+    booleanFields.forEach(([formField, column]) => {
+      const value = formData.get(formField);
       if (value !== null) {
-        updateData[field] = value === 'true';
+        updateData[column] = value === 'true';
       }
     });
 

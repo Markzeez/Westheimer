@@ -17,6 +17,7 @@ interface Product {
   ratings: number;
   reviewCount: number;
   isFeatured?: boolean;
+  color?: string | null;
 }
 
 interface ProductCardProps {
@@ -46,6 +47,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-gray-900 truncate group-hover:text-black transition-colors">{product.name}</h4>
           <p className="text-sm font-semibold text-black">{formatPrice(product.price)}</p>
+          {product.color && <p className="text-xs capitalize text-gray-500">{product.color}</p>}
         </div>
         <button className="p-2 text-gray-400 hover:text-red-500 transition-colors" aria-label="Add to wishlist">
           <Heart className="w-5 h-5" />
@@ -117,6 +119,9 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
               {product.name}
             </h3>
           </Link>
+          {product.color && (
+            <p className="mb-2 text-sm capitalize text-gray-500">Color: {product.color}</p>
+          )}
           
           <p className="text-2xl font-bold text-gray-900 mb-4">{formatPrice(product.price)}</p>
           

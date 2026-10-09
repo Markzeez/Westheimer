@@ -13,6 +13,7 @@ import {
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { formatPrice } from "@/lib/currency";
 import type { Product } from "@/types";
+import { ProductPurchasePanel } from "@/components/products/ProductPurchasePanel";
 
 interface ProductPageProps {
   params: Promise<{
@@ -33,6 +34,7 @@ const getProduct = cache(async (id: string): Promise<Product | null> => {
     .from("products")
     .select("*")
     .eq("id", id)
+    .eq("is_active", true)
     .single();
 
   if (error || !data) {
@@ -370,6 +372,16 @@ export default async function ProductDetailPage({
               <p className="mb-6 max-w-2xl leading-relaxed text-gray-600">
                 {product.description}
               </p>
+
+              <ProductPurchasePanel
+                product={{
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                  inventory: product.inventory,
+                  image: primaryImage,
+                }}
+              />
 
               {/* ========================= */}
               {/* Features */}

@@ -102,12 +102,19 @@ export default function AdminProductsPage() {
   const fetchProducts = useCallback(async () => {
     try {
       setIsLoading(true);
-      const params = new URLSearchParams({ page: String(page), limit: '12' });
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: '12',
+        includeInactive: 'true',
+      });
       if (search) params.set('search', search);
       if (filterCategory) params.set('category', filterCategory);
       if (filterStock === 'in-stock') params.set('inStock', 'true');
-      const res = await fetch(`/api/products?${params.toString()}`);
+      const res = await fetch(`/api/products?${params.toString()}`, { cache: 'no-store' });
       const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Failed to fetch products');
+      }
       setProducts(json.data || []);
       setTotalPages(json.pagination?.totalPages || 1);
     } catch {
@@ -157,12 +164,25 @@ export default function AdminProductsPage() {
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (files.length + imageFiles.length > 5) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (files.some((file) => !allowedTypes.includes(file.type))) {
+      alert('Use JPG, PNG, or WebP images.');
+      e.target.value = '';
+      return;
+    }
+    if (files.some((file) => file.size > 10 * 1024 * 1024)) {
+      alert('Each image must be 10 MB or smaller.');
+      e.target.value = '';
+      return;
+    }
+    if (files.length + imagePreviews.length > 5) {
       alert('Maximum 5 images allowed');
+      e.target.value = '';
       return;
     }
     setImageFiles((prev) => [...prev, ...files]);
     setImagePreviews((prev) => [...prev, ...files.map((file) => URL.createObjectURL(file))]);
+    e.target.value = '';
   };
 
   const removeImage = (index: number) => {
@@ -183,6 +203,22 @@ export default function AdminProductsPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!form.name.trim() || !form.description.trim() || !form.color.trim()) {
+      alert('Enter a product name, description, and color.');
+      return;
+    }
+    if (!Number.isFinite(form.price) || form.price <= 0) {
+      alert('Enter a price greater than zero.');
+      return;
+    }
+    if (!editingProduct && imageFiles.length === 0) {
+      alert('Add at least one product image.');
+      return;
+    }
+    if (imagePreviews.length === 0) {
+      alert('A product must have at least one image.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       const fd = new FormData();
@@ -538,11 +574,11 @@ export default function AdminProductsPage() {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+              <form id="product-form" onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
                 {/* Images */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Product Images (up to 5)
+                    Product Images * (up to 5)
                   </label>
                   <div className="grid grid-cols-5 gap-3">
                     {imagePreviews.map((preview, i) => (
@@ -576,12 +612,12 @@ export default function AdminProductsPage() {
                       <label className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors">
                         <ImageIcon className="w-6 h-6 text-gray-400 mb-1" />
                         <span className="text-[10px] text-gray-400">Add Image</span>
-                        <input type="file" accept="image/*" multiple onChange={handleImageChange} className="hidden" />
+                        <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleImageChange} className="hidden" />
                       </label>
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    First image is the primary display image. JPG, PNG, WebP.
+                    Add at least one image. First image is shown first. JPG, PNG, or WebP; max 10 MB each.
                   </p>
                 </div>
 
@@ -610,11 +646,11 @@ export default function AdminProductsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price ($) *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (₦) *</label>
                     <input
                       type="number"
                       required
-                      min="0"
+                      min="0.01"
                       step="0.01"
                       value={form.price}
                       onChange={(e) => setForm((prev) => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
@@ -678,9 +714,11 @@ export default function AdminProductsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Color *</label>
                     <input
                       type="text"
+                      required
+                      maxLength={80}
                       value={form.color}
                       onChange={(e) => setForm((prev) => ({ ...prev, color: e.target.value }))}
                       className="w-full px-3 py-2.5 border border-gray-300 rounded-lg"
@@ -832,7 +870,8 @@ export default function AdminProductsPage() {
                   Cancel
                 </button>
                 <LoadingButton
-                  onClick={handleSubmit}
+                  type="submit"
+                  form="product-form"
                   loading={isSubmitting}
                   loadingText="Saving..."
                   className="px-6 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"

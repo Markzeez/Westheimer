@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { clerkClient } from '@clerk/nextjs/server';
 import { getAuthenticatedAdmin } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
@@ -44,8 +45,26 @@ export async function GET(request: NextRequest) {
 
       if (error) throw error;
 
-      // Apply filters manually since we can't easily do ILIKE with range
-      let filteredData: UserRecord[] = (data as UserRecord[]) || [];
+      const clerk = await clerkClient();
+      const profiles = (data as (UserRecord & { id: string; clerk_user_id?: string | null })[]) || [];
+      let filteredData = await Promise.all(profiles.map(async (profile) => {
+        if (!profile.clerk_user_id) {
+          return { ...profile, _id: profile.id, role: 'user' };
+        }
+        const clerkUser = await clerk.users.getUser(profile.clerk_user_id);
+        const email = clerkUser.emailAddresses.find(
+          (address) => address.id === clerkUser.primaryEmailAddressId
+        )?.emailAddress;
+        return {
+          ...profile,
+          _id: profile.id,
+          role:
+            email?.toLowerCase() === 'markzeezibro739@gmail.com' ||
+            clerkUser.publicMetadata.role === 'admin'
+              ? 'admin'
+              : 'user',
+        };
+      }));
       if (search) {
         filteredData = filteredData.filter(u => 
           u.name.toLowerCase().includes(search.toLowerCase()) ||
