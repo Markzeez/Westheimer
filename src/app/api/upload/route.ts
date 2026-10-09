@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getAuthenticatedAdmin } from '@/lib/auth';
 import { uploadMultipleToCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedAdmin();
     
-    if (!session || (session.user as { role: string }).role !== 'admin') {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -74,9 +74,9 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedAdmin();
     
-    if (!session || (session.user as { role?: string }).role !== 'admin') {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }

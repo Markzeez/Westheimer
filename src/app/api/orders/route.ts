@@ -1,22 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser();
     
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
-
-    const user = session.user as typeof session.user & {
-      id: string;
-      role?: string;
-    };
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -73,19 +68,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser();
     
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
-
-    const user = session.user as typeof session.user & {
-      id: string;
-      role?: string;
-    };
 
     const supabaseAdmin = createSupabaseAdminClient();
 

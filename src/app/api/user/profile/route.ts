@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { auth } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
 const notificationPreferencesSchema = z.object({
@@ -23,9 +23,8 @@ const profileUpdateSchema = z
   });
 
 async function getAuthenticatedUserId() {
-  const session = await auth();
-  const userId = (session?.user as { id?: string } | undefined)?.id;
-  return userId || null;
+  const user = await getAuthenticatedUser();
+  return user?.id ?? null;
 }
 
 export async function GET() {

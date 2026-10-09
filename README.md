@@ -27,7 +27,7 @@ A complete Next.js 15 furniture e-commerce application with admin dashboard, bui
 - **Framework**: Next.js 15 (App Router) + TypeScript
 - **Styling**: Tailwind CSS v4 + Framer Motion
 - **Database**: **Supabase (PostgreSQL)** + Row Level Security
-- **Auth**: NextAuth v5 (Credentials + JWT) + Supabase Auth
+- **Auth**: Clerk (authentication) + Supabase (database-backed profiles and roles)
 - **State**: Zustand (cart/wishlist) + TanStack Query
 - **Forms**: React Hook Form + Zod validation
 - **Images**: Cloudinary (auto-optimization, CDN)
@@ -39,6 +39,7 @@ A complete Next.js 15 furniture e-commerce application with admin dashboard, bui
 ### Prerequisites
 - Node.js 18+
 - Supabase account (free tier works)
+- Clerk account
 - Cloudinary account (for image uploads)
 
 ### Installation
@@ -53,7 +54,7 @@ cp .env.example .env.local
 
 # Configure your .env.local with:
 # - Supabase credentials
-# - AUTH_SECRET (generate with `npx auth secret`)
+# - Clerk publishable and secret keys
 # - Cloudinary credentials (optional but recommended)
 
 # Run development server
@@ -67,10 +68,18 @@ npm run dev
    - `NEXT_PUBLIC_SUPABASE_URL` (Project URL)
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (anon public)
    - `SUPABASE_SERVICE_ROLE_KEY` (service role - keep secret!)
-3. Go to SQL Editor and run the migration:
+3. Go to SQL Editor and run the initial schema:
    - Copy contents of `supabase/migrations/20240101000000_initial_schema.sql`
    - Execute in Supabase SQL Editor
-4. Enable Email Auth in Authentication → Providers
+4. Apply `supabase/migrations/20261009063646_clerk_identity_mapping.sql` before starting the app. This preserves existing profile UUIDs and order references while enabling Clerk identity links.
+5. Keep the Supabase service-role key server-side; authenticated database operations are performed by server routes after Clerk authorization.
+
+### Clerk Setup
+
+1. Create a [Clerk application](https://clerk.com), configure the sign-in methods you want to offer, and enable the name fields if you want Clerk to populate profile names at signup.
+2. Add `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` to `.env.local` and your deployment environment.
+3. Existing Supabase profiles are linked to Clerk on first sign-in when the verified primary email matches. New accounts receive a profile with the default `user` role.
+4. Admin authorization continues to use the server-side `role` field in `public.users`; do not grant admin access through user-editable Clerk metadata.
 
 ### Cloudinary Setup (Recommended)
 
@@ -97,9 +106,9 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# NextAuth
-AUTH_SECRET=replace-with-a-generated-secret
-NEXTAUTH_URL=http://localhost:3000
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
+CLERK_SECRET_KEY=your-clerk-secret-key
 
 # Cloudinary (for production image uploads)
 CLOUDINARY_CLOUD_NAME=your-cloud-name
@@ -107,10 +116,6 @@ CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
 CLOUDINARY_UPLOAD_PRESET=westheimer_products
 ```
-
-Generate the NextAuth secret with `npx auth secret` and set its output as
-`AUTH_SECRET` in `.env.local` and in your Vercel project environment variables.
-Keep the value private and use a different secret for each environment.
 
 ## Project Structure
 
@@ -128,6 +133,8 @@ src/
 │   │   ├── account/page.tsx            # User profile
 │   │   ├── orders/[id]/page.tsx        # Order detail
 │   │   └── orders/[id]/receipt/page.tsx # Printable receipt
+│   ├── login/                          # Clerk sign-in
+│   ├── register/                       # Clerk sign-up
 │   ├── admin/
 │   │   ├── page.tsx                    # Dashboard with charts
 │   │   ├── products/page.tsx           # Product CRUD
@@ -136,8 +143,6 @@ src/
 │   │   ├── analytics/page.tsx          # Analytics
 │   │   └── settings/page.tsx           # Settings
 │   └── api/
-│       ├── auth/[...nextauth]/         # NextAuth v5
-│       ├── auth/register/              # User registration
 │       ├── products/                   # Product CRUD
 │       ├── orders/                     # Order management
 │       ├── admin/                      # Admin APIs
@@ -148,9 +153,10 @@ src/
 │   │   ├── CartDrawer.tsx              # Slide-out cart
 │   │   └── ToastProvider.tsx           # Notifications
 │   ├── admin/AdminLayout.tsx           # Admin UI components
-│   └── Providers.tsx                   # Session + Query + Toast
+│   └── Providers.tsx                   # Clerk + Query + Toast
 ├── stores/cartStore.ts                 # Zustand cart + wishlist (Supabase sync)
 ├── lib/
+│   ├── auth.ts                         # Clerk identity and profile mapping
 │   ├── supabase.ts                     # Supabase client
 │   ├── supabase-admin.ts               # Supabase admin helpers
 │   └── cloudinary.ts                   # Cloudinary helpers
@@ -182,16 +188,16 @@ src/
 - Access-controlled (owner or admin only)
 
 ### Supabase Integration
-- **Row Level Security (RLS)** for data protection
-- **Supabase Auth** for user management
-- **Service Role** for admin operations
+- **Row Level Security (RLS)** remains enabled; Supabase-Auth-only policies are removed by the Clerk migration
+- **Clerk** for user authentication
+- **Service Role** for server operations after Clerk authorization
 - **Real-time subscriptions** ready for future features
 - **Database functions** for analytics (revenue by month)
 
 ### State Management
 - **Zustand** for cart/wishlist (persisted to localStorage + Supabase sync)
 - **TanStack Query** for server state
-- **NextAuth** for authentication state
+- **Supabase** for profiles, authorization roles, and application data
 
 ## Deployment
 
@@ -203,7 +209,7 @@ src/
 
 ### Supabase Production Checklist
 - [ ] Enable RLS on all tables
-- [ ] Set up custom SMTP for auth emails
+- [ ] Configure Clerk email settings and redirect URLs
 - [ ] Configure CORS for your domain
 - [ ] Set up database backups
 - [ ] Enable Point-in-Time Recovery (Pro plan)

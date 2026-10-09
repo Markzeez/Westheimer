@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { createSupabaseBrowserClient } from '@/lib/supabase';
 
 export interface CartItem {
   id: string;
@@ -95,19 +94,14 @@ export const useCartStore = create<CartState>()(
       syncFromSupabase: async () => {
         set({ isSyncing: true });
         try {
-          const supabase = createSupabaseBrowserClient();
-          const { data: { user } } = await supabase.auth.getUser();
-          
-          if (!user) return;
-
-          const { data: cart } = await supabase
-            .from('carts')
-            .select('items')
-            .eq('user_id', user.id)
-            .single();
-
-          if (cart?.items) {
-            set({ items: cart.items });
+          const response = await fetch('/api/user/cart', { cache: 'no-store' });
+          if (response.status === 401) return;
+          if (!response.ok) throw new Error('Failed to load cart');
+          const data = await response.json();
+          if (Array.isArray(data.items)) {
+            set({ items: data.items });
+          } else {
+            await get().syncToSupabase();
           }
         } catch (error) {
           console.error('Failed to sync cart from Supabase:', error);
@@ -118,20 +112,14 @@ export const useCartStore = create<CartState>()(
 
       syncToSupabase: async () => {
         try {
-          const supabase = createSupabaseBrowserClient();
-          const { data: { user } } = await supabase.auth.getUser();
-          
-          if (!user) return;
-
-          const { items } = get();
-          
-          await supabase
-            .from('carts')
-            .upsert({
-              user_id: user.id,
-              items,
-              updated_at: new Date().toISOString(),
-            });
+          const response = await fetch('/api/user/cart', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: get().items }),
+          });
+          if (response.status !== 401 && !response.ok) {
+            throw new Error('Failed to save cart');
+          }
         } catch (error) {
           console.error('Failed to sync cart to Supabase:', error);
         }
@@ -151,16 +139,6 @@ export interface WishlistItem {
   price: number;
   image: string;
   addedAt: string;
-}
-
-interface WishlistRow {
-  product_id: string;
-  created_at: string;
-  product: Array<{
-    name?: string;
-    price?: number;
-    images?: Array<{ url?: string }>;
-  }>;
 }
 
 interface WishlistState {
@@ -211,29 +189,14 @@ export const useWishlistStore = create<WishlistState>()(
       syncFromSupabase: async () => {
         set({ isSyncing: true });
         try {
-          const supabase = createSupabaseBrowserClient();
-          const { data: { user } } = await supabase.auth.getUser();
-          
-          if (!user) return;
-
-          const { data: wishlist } = await supabase
-            .from('wishlists')
-            .select(`
-              product_id,
-              created_at,
-              product:products(id, name, price, images)
-            `)
-            .eq('user_id', user.id);
-
-          if (wishlist) {
-            const items = wishlist.map((w: WishlistRow) => ({
-              productId: w.product_id,
-              name: w.product?.[0]?.name || '',
-              price: w.product?.[0]?.price || 0,
-              image: w.product?.[0]?.images?.[0]?.url || '',
-              addedAt: w.created_at,
-            }));
-            set({ items });
+          const response = await fetch('/api/user/wishlist', { cache: 'no-store' });
+          if (response.status === 401) return;
+          if (!response.ok) throw new Error('Failed to load wishlist');
+          const data = await response.json();
+          if (Array.isArray(data.items) && data.items.length > 0) {
+            set({ items: data.items });
+          } else if (get().items.length > 0) {
+            await get().syncToSupabase();
           }
         } catch (error) {
           console.error('Failed to sync wishlist from Supabase:', error);
@@ -244,28 +207,18 @@ export const useWishlistStore = create<WishlistState>()(
 
       syncToSupabase: async () => {
         try {
-          const supabase = createSupabaseBrowserClient();
-          const { data: { user } } = await supabase.auth.getUser();
-          
-          if (!user) return;
-
-          const { items } = get();
-          
-          // Delete existing and re-insert (simple approach)
-          await supabase
-            .from('wishlists')
-            .delete()
-            .eq('user_id', user.id);
-
-          if (items.length > 0) {
-            const wishlistItems = items.map(item => ({
-              user_id: user.id,
-              product_id: item.productId,
-              created_at: item.addedAt,
-            }));
-            await supabase
-              .from('wishlists')
-              .insert(wishlistItems);
+          const response = await fetch('/api/user/wishlist', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              items: get().items.map((item) => ({
+                productId: item.productId,
+                addedAt: item.addedAt,
+              })),
+            }),
+          });
+          if (response.status !== 401 && !response.ok) {
+            throw new Error('Failed to save wishlist');
           }
         } catch (error) {
           console.error('Failed to sync wishlist to Supabase:', error);

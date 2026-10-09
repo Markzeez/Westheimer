@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSession, signOut } from 'next-auth/react';
+import { useClerk, useUser } from '@clerk/nextjs';
 // import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { ComponentType } from 'react';
@@ -173,10 +173,13 @@ const notificationSettings: {
 ];
 
 export default function AccountPage() {
-  const { data: session, status } = useSession();
+  const { isLoaded, isSignedIn, user: clerkUser } = useUser();
+  const { signOut } = useClerk();
+  const status = !isLoaded ? 'loading' : isSignedIn ? 'authenticated' : 'unauthenticated';
   // const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabId>('profile');
+  const [profile, setProfile] = useState<ExtendedUser | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [saving, setSaving] = useState(false);
   const [savingPreferences, setSavingPreferences] = useState(false);
@@ -204,12 +207,10 @@ export default function AccountPage() {
   });
 
   /*
-   * Populate the profile form when the session becomes available.
+   * Populate the profile form after Clerk has authenticated the user.
    *
-   * The original code placed session values directly inside
-   * defaultValues. react-hook-form only uses defaultValues on the
-   * initial render, so the form could remain empty after NextAuth
-   * finished loading the session.
+   * Placing session values directly inside
+   * defaultValues would leave the form empty after authentication loads.
    */
   useEffect(() => {
     if (status !== 'authenticated') {
@@ -227,6 +228,7 @@ export default function AccountPage() {
         }
         if (cancelled) return;
 
+        setProfile(result.profile);
         profileForm.reset({
           name: result.profile.name ?? '',
           email: result.profile.email ?? '',
@@ -288,7 +290,7 @@ export default function AccountPage() {
   }, [status]);
 
   const handleProfileUpdate = async (data: ProfileForm) => {
-    if (!session?.user) {
+    if (!isSignedIn) {
       toast.error('You must be signed in');
       return;
     }
@@ -316,6 +318,7 @@ export default function AccountPage() {
         phone: result.profile.phone ?? '',
         address: result.profile.address ?? '',
       });
+      setProfile(result.profile);
 
       toast.success('Profile updated successfully!');
     } catch (error) {
@@ -359,25 +362,10 @@ export default function AccountPage() {
     setSaving(true);
 
     try {
-      /*
-       * Replace this with your real password endpoint.
-       *
-       * const response = await fetch('/api/user/password', {
-       *   method: 'PUT',
-       *   headers: {
-       *     'Content-Type': 'application/json',
-       *   },
-       *   body: JSON.stringify(data),
-       * });
-       *
-       * if (!response.ok) {
-       *   throw new Error('Failed to change password');
-       * }
-       */
-
-      console.log('Password update requested:', {
-        currentPassword: Boolean(data.currentPassword),
-        newPassword: Boolean(data.newPassword),
+      if (!clerkUser) throw new Error('You must be signed in');
+      await clerkUser.updatePassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
       });
 
       passwordForm.reset();
@@ -393,9 +381,7 @@ export default function AccountPage() {
 
   const handleSignOut = async () => {
     try {
-      await signOut({
-        callbackUrl: '/',
-      });
+      await signOut({ redirectUrl: '/' });
     } catch (error) {
       console.error('Sign out failed:', error);
       toast.error('Failed to sign out');
@@ -491,8 +477,7 @@ export default function AccountPage() {
   };
 
   /*
-   * NextAuth can initially have an "unauthenticated/loading" state.
-   * Checking !session immediately can cause a flash of the login page.
+   * Wait for Clerk to initialize before showing the sign-in prompt.
    */
   if (status === 'loading') {
     return (
@@ -505,7 +490,7 @@ export default function AccountPage() {
     );
   }
 
-  if (!session) {
+  if (!isSignedIn) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="mx-auto max-w-md px-4 text-center">
@@ -532,8 +517,12 @@ export default function AccountPage() {
     );
   }
 
-  const user = session.user as ExtendedUser;
-  const isAdmin = user.role === 'admin';
+  const user = profile ?? {
+    id: clerkUser?.id,
+    name: clerkUser?.fullName,
+    email: clerkUser?.primaryEmailAddress?.emailAddress,
+  };
+  const isAdmin = profile?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-gray-50">

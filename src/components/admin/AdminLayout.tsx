@@ -31,7 +31,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { signOut, useSession } from 'next-auth/react'
+import { useClerk, useUser } from '@clerk/nextjs'
 
 /* ============================================================
    NAVIGATION
@@ -185,7 +185,8 @@ export function AdminSidebar({
   isOpen: controlledIsOpen,
   onClose: controlledOnClose,
 }: AdminSidebarProps = {}) {
-  const { data: session } = useSession()
+  const { user } = useUser()
+  const { signOut } = useClerk()
   const pathname = usePathname()
 
   /*
@@ -213,9 +214,7 @@ export function AdminSidebar({
   }
 
   const handleSignOut = async () => {
-    await signOut({
-      callbackUrl: '/',
-    })
+    await signOut({ redirectUrl: '/' })
   }
 
   return (
@@ -467,7 +466,7 @@ export function AdminSidebar({
                   text-gray-900
                 "
               >
-                {session?.user?.name || 'Admin User'}
+                {user?.fullName || 'Admin User'}
               </p>
 
               <p
@@ -477,7 +476,7 @@ export function AdminSidebar({
                   text-gray-500
                 "
               >
-                {session?.user?.email ||
+                {user?.primaryEmailAddress?.emailAddress ||
                   'admin@example.com'}
               </p>
             </div>

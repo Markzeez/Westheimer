@@ -1,78 +1,83 @@
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { createSupabaseServerClient } from "./supabase";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { createSupabaseAdminClient } from "@/lib/supabase";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required");
-        }
+export type AuthenticatedUser = {
+  id: string;
+  clerk_user_id: string;
+  name: string;
+  email: string;
+  role: string;
+  [key: string]: unknown;
+};
 
-        const supabase = createSupabaseServerClient();
+export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
+  const { userId } = await auth();
+  if (!userId) return null;
 
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: credentials.email as string,
-          password: credentials.password as string,
-        });
+  const supabase = createSupabaseAdminClient();
+  const { data: linkedProfile, error: linkedProfileError } = await supabase
+    .from("users")
+    .select("*")
+    .eq("clerk_user_id", userId)
+    .maybeSingle();
 
-        if (error || !data.user) {
-          throw new Error("Invalid email or password");
-        }
+  if (linkedProfileError) throw linkedProfileError;
+  if (linkedProfile) return linkedProfile as AuthenticatedUser;
 
-        // Get user profile from public.users table
-        const { data: profile } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", data.user.id)
-          .single();
+  const clerkUser = await currentUser();
+  if (!clerkUser || clerkUser.id !== userId) return null;
 
-        return {
-          id: data.user.id,
-          name: profile?.name || data.user.email?.split("@")[0] || "User",
-          email: data.user.email,
-          role: profile?.role || "user",
-          image: data.user.user_metadata?.avatar_url,
-        };
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role =
-          "role" in user && typeof user.role === "string" ? user.role : undefined;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        const user = session.user as typeof session.user & {
-          id?: string;
-          role?: string;
-        };
-        if (typeof token.id === "string") {
-          user.id = token.id;
-        }
-        user.role = typeof token.role === "string" ? token.role : undefined;
-      }
-      return session;
-    },
-  },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  secret: process.env.AUTH_SECRET,
-});
+  const primaryEmail = clerkUser.emailAddresses.find(
+    (email) => email.id === clerkUser.primaryEmailAddressId
+  );
+  if (!primaryEmail || primaryEmail.verification?.status !== "verified") return null;
+
+  const { data: existingProfile, error: existingProfileError } = await supabase
+    .from("users")
+    .select("*")
+    .eq("email", primaryEmail.emailAddress)
+    .maybeSingle();
+
+  if (existingProfileError) throw existingProfileError;
+
+  if (existingProfile) {
+    if (existingProfile.clerk_user_id && existingProfile.clerk_user_id !== userId) {
+      throw new Error("This profile is already linked to another Clerk account");
+    }
+
+    const { data: linked, error } = await supabase
+      .from("users")
+      .update({ clerk_user_id: userId })
+      .eq("id", existingProfile.id)
+      .select("*")
+      .single();
+
+    if (error) throw error;
+    return linked as AuthenticatedUser;
+  }
+
+  const { data: profile, error } = await supabase
+    .from("users")
+    .insert({
+      id: crypto.randomUUID(),
+      clerk_user_id: userId,
+      name:
+        clerkUser.fullName ||
+        [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") ||
+        primaryEmail.emailAddress.split("@")[0],
+      email: primaryEmail.emailAddress,
+      role: "user",
+      onboarding_completed: false,
+      onboarding_data: {},
+    })
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return profile as AuthenticatedUser;
+}
+
+export async function getAuthenticatedAdmin(): Promise<AuthenticatedUser | null> {
+  const user = await getAuthenticatedUser();
+  return user?.role === "admin" ? user : null;
+}

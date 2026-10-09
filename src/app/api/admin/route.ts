@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getAuthenticatedAdmin } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-
-interface AuthUser {
-  role?: string;
-  [key: string]: unknown;
-}
 
 interface UserRecord {
   name: string;
@@ -16,10 +11,9 @@ interface UserRecord {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    const user = session?.user as AuthUser | undefined;
+    const user = await getAuthenticatedAdmin();
     
-    if (!session || user?.role !== 'admin') {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }

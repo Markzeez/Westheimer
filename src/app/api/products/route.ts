@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getAuthenticatedAdmin } from '@/lib/auth';
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { isCloudinaryConfigured, uploadMultipleToCloudinary } from '@/lib/cloudinary';
 
@@ -67,10 +67,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    const userRole = (session?.user as { role?: string } | undefined)?.role;
+    const user = await getAuthenticatedAdmin();
 
-    if (!session || userRole !== 'admin') {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }

@@ -1,16 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, User, Heart, ShoppingBag, Menu, X, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
+import { useClerk, useUser } from '@clerk/nextjs';
 
 export function Header() {
-  const { data: session } = useSession();
+  const { isSignedIn, user } = useUser();
+  const { signOut } = useClerk();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      setIsAdmin(false);
+      return;
+    }
+
+    let cancelled = false;
+    const loadRole = async () => {
+      try {
+        const response = await fetch('/api/user/profile', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Failed to load user role');
+        const result = await response.json();
+        if (!cancelled) setIsAdmin(result.profile?.role === 'admin');
+      } catch (error) {
+        console.error('Failed to load user role:', error);
+      }
+    };
+
+    void loadRole();
+    return () => {
+      cancelled = true;
+    };
+  }, [isSignedIn, user?.id]);
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -88,12 +114,12 @@ export function Header() {
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 p-2 text-gray-700 hover:text-gray-900 rounded-lg hover:bg-gray-100"
               >
-                {session ? (
+                {isSignedIn ? (
                   <>
                     <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
                       <User className="w-4 h-4 text-black" />
                     </div>
-                    <span className="hidden sm:block font-medium">{session.user?.name || 'Account'}</span>
+                    <span className="hidden sm:block font-medium">{user?.fullName || 'Account'}</span>
                     <ChevronDown className="w-4 h-4 text-gray-500" />
                   </>
                 ) : (
@@ -107,21 +133,21 @@ export function Header() {
                   animate={{ opacity: 1, y: 0 }}
                   className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
                 >
-                  {session ? (
+                  {isSignedIn ? (
                     <>
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">{session.user?.name}</p>
-                        <p className="text-xs text-gray-500">{session.user?.email}</p>
+                        <p className="text-sm font-medium text-gray-900">{user?.fullName}</p>
+                        <p className="text-xs text-gray-500">{user?.primaryEmailAddress?.emailAddress}</p>
                       </div>
                       <Link href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Account</Link>
                       <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Orders</Link>
                       <Link href="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Wishlist</Link>
-                      {(session.user as { role?: string })?.role === 'admin' && (
+                      {isAdmin && (
                         <Link href="/admin" className="block px-4 py-2 text-sm text-black hover:bg-primary-50 font-medium">Admin Dashboard</Link>
                       )}
                       <div className="border-t border-gray-100 my-2" />
                       <button
-                        onClick={() => signOut({ callbackUrl: '/' })}
+                        onClick={() => void signOut({ redirectUrl: '/' })}
                         className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                       >
                         Sign Out
@@ -197,11 +223,11 @@ export function Header() {
                 <Link href="/contact" className="block text-gray-700 hover:text-gray-900 font-medium">Contact</Link>
               </nav>
               <div className="mt-8 pt-8 border-t border-gray-200">
-                {session ? (
+                {isSignedIn ? (
                   <div className="space-y-2">
                     <Link href="/account" className="block text-gray-700 hover:text-gray-900">My Account</Link>
                     <Link href="/orders" className="block text-gray-700 hover:text-gray-900">My Orders</Link>
-                    <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full text-left text-red-600 hover:text-red-700">Sign Out</button>
+                    <button onClick={() => void signOut({ redirectUrl: '/' })} className="w-full text-left text-red-600 hover:text-red-700">Sign Out</button>
                   </div>
                 ) : (
                   <div className="space-y-2">

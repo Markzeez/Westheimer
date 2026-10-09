@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-import { auth } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import ReceiptView from './receipt-view';
 
 export interface OrderData {
@@ -61,20 +61,17 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  const userId = (session?.user as { id?: string; role?: string } | undefined)?.id;
+  const user = await getAuthenticatedUser();
 
-  if (!userId) {
+  if (!user) {
     return {
       title: 'Receipt Not Found',
       robots: { index: false, follow: false },
     };
   }
 
-  const isAdmin =
-    (session?.user as { role?: string } | undefined)?.role === 'admin';
   const { id } = await params;
-  const order = await getOrder(id, userId, isAdmin);
+  const order = await getOrder(id, user.id, user.role === 'admin');
 
   if (!order) {
     return {
@@ -94,17 +91,14 @@ export default async function ReceiptPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  const userId = (session?.user as { id?: string; role?: string } | undefined)?.id;
-  const isAdmin =
-    (session?.user as { role?: string } | undefined)?.role === 'admin';
+  const user = await getAuthenticatedUser();
 
-  if (!userId) {
+  if (!user) {
     notFound();
   }
 
   const { id } = await params;
-  const order = await getOrder(id, userId, isAdmin);
+  const order = await getOrder(id, user.id, user.role === 'admin');
 
   if (!order) {
     notFound();
@@ -114,7 +108,7 @@ export default async function ReceiptPage({
     <ReceiptView
       order={order}
       id={id}
-      userEmail={session?.user?.email ?? ''}
+      userEmail={user.email}
     />
   );
 }

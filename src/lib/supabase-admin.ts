@@ -14,49 +14,6 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   },
 });
 
-// Helper functions for admin operations
-export async function getUserByEmail(email: string) {
-  const { data, error } = await supabaseAdmin.auth.admin.listUsers();
-  if (error) return { data: null, error };
-  const user = data.users.find(u => u.email === email) ?? null;
-  return { data: user ? { user } : null, error: null };
-}
-
-export async function createUser(
-  email: string,
-  password: string,
-  userData: Record<string, unknown>,
-) {
-  const { data, error } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: userData,
-  });
-  return { data, error };
-}
-
-export async function updateUser(
-  userId: string,
-  updates: Parameters<typeof supabaseAdmin.auth.admin.updateUserById>[1],
-) {
-  const { data, error } = await supabaseAdmin.auth.admin.updateUserById(userId, updates);
-  return { data, error };
-}
-
-export async function deleteUser(userId: string) {
-  const { data, error } = await supabaseAdmin.auth.admin.deleteUser(userId);
-  return { data, error };
-}
-
-export async function listUsers(page = 1, perPage = 50) {
-  const { data, error } = await supabaseAdmin.auth.admin.listUsers({
-    page,
-    perPage,
-  });
-  return { data, error };
-}
-
 // Database admin operations
 export const dbAdmin = {
   // Users table

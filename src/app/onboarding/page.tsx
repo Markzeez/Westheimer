@@ -3,8 +3,9 @@
 import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { ChevronRight, ChevronLeft, Check, Sparkles, Home, CreditCard, Bell, User, ArrowRight } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
 
@@ -44,7 +45,7 @@ const BUDGET_RANGES = [
 ];
 
 function OnboardingPageContent() {
-  const { data: session } = useSession();
+  const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(0);
@@ -66,7 +67,7 @@ function OnboardingPageContent() {
   // Check if user already completed onboarding
   useEffect(() => {
     const checkOnboardingStatus = async () => {
-      if (!session?.user) return;
+      if (!isLoaded || !isSignedIn) return;
 
       try {
         const response = await fetch('/api/user/onboarding-status', {
@@ -91,13 +92,13 @@ function OnboardingPageContent() {
       }
     };
 
-    if (session?.user) {
+    if (isLoaded && isSignedIn) {
       checkOnboardingStatus();
     }
-  }, [session, router, searchParams]);
+  }, [isLoaded, isSignedIn, router, searchParams]);
 
   const saveProgress = async (final = false) => {
-    if (!session?.user) return;
+    if (!isSignedIn) return;
 
     try {
       const response = await fetch('/api/user/complete-onboarding', {
@@ -181,7 +182,9 @@ function OnboardingPageContent() {
     return null; // Will redirect
   }
 
-  if (!session) {
+  if (!isLoaded) return null;
+
+  if (!isSignedIn) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -195,10 +198,10 @@ function OnboardingPageContent() {
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Westheimer Designs</h2>
             <p className="text-gray-500 mb-8">Please sign in to continue your onboarding journey.</p>
-            <a href="/login" className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
+            <Link href="/login" className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl hover:bg-primary-700">
               Sign In
               <ArrowRight className="w-5 h-5" />
-            </a>
+            </Link>
           </motion.div>
         </div>
       </div>

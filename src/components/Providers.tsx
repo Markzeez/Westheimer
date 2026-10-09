@@ -1,9 +1,24 @@
 'use client';
 
-import { SessionProvider } from 'next-auth/react';
+import { ClerkProvider } from '@clerk/nextjs';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode, useState } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { type ReactNode, useEffect, useState } from 'react';
 import { ToastProvider } from './ToastProvider';
+import { useCartStore, useWishlistStore } from '@/stores/cartStore';
+
+function AuthenticatedStoreSync() {
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn && user?.id) {
+      void useCartStore.getState().syncFromSupabase();
+      void useWishlistStore.getState().syncFromSupabase();
+    }
+  }, [isLoaded, isSignedIn, user?.id]);
+
+  return null;
+}
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -19,12 +34,13 @@ export function Providers({ children }: { children: ReactNode }) {
   );
 
   return (
-    <SessionProvider>
+    <ClerkProvider>
+      <AuthenticatedStoreSync />
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
           {children}
         </ToastProvider>
       </QueryClientProvider>
-    </SessionProvider>
+    </ClerkProvider>
   );
 }

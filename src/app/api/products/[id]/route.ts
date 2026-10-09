@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getAuthenticatedAdmin } from '@/lib/auth';
 import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase';
 import { uploadMultipleToCloudinary, deleteFromCloudinary, isCloudinaryConfigured } from '@/lib/cloudinary';
 
@@ -42,9 +42,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedAdmin();
     
-    if (!session || (session.user as { role?: string } | undefined)?.role !== 'admin') {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -173,9 +173,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedAdmin();
     
-    if (!session || (session.user as { role?: string } | undefined)?.role !== 'admin') {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }

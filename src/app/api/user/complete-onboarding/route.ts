@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
 
 async function updateOnboarding(request: NextRequest, complete: boolean) {
   try {
-    const session = await auth();
-    const userId = (session?.user as { id?: string } | undefined)?.id;
+    const user = await getAuthenticatedUser();
 
-    if (!userId) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Not authenticated' },
         { status: 401 }
@@ -26,10 +25,10 @@ async function updateOnboarding(request: NextRequest, complete: boolean) {
         }
       : { onboarding_data: onboardingData };
 
-    const { data: user, error } = await supabaseAdmin
+    const { data: profile, error } = await supabaseAdmin
       .from('users')
       .update(updateData)
-      .eq('id', userId)
+      .eq('id', user.id)
       .select()
       .single();
 
@@ -44,8 +43,8 @@ async function updateOnboarding(request: NextRequest, complete: boolean) {
     return NextResponse.json({
       success: true,
       user: {
-        onboarding_completed: user.onboarding_completed,
-        onboarding_completed_at: user.onboarding_completed_at,
+        onboarding_completed: profile.onboarding_completed,
+        onboarding_completed_at: profile.onboarding_completed_at,
       },
     });
   } catch (error) {

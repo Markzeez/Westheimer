@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { clerkClient } from '@clerk/nextjs/server';
+import { getAuthenticatedAdmin } from '@/lib/auth';
 import { createSupabaseAdminClient } from '@/lib/supabase';
-
-interface AuthUser {
-  id?: string;
-  role?: string;
-  [key: string]: unknown;
-}
 
 interface UserUpdateBody {
   name?: string;
@@ -21,10 +16,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    const userSession = session?.user as AuthUser | undefined;
+    const admin = await getAuthenticatedAdmin();
     
-    if (!session || userSession?.role !== 'admin') {
+    if (!admin) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -65,10 +59,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    const userSession = session?.user as AuthUser | undefined;
+    const admin = await getAuthenticatedAdmin();
     
-    if (!session || userSession?.role !== 'admin') {
+    if (!admin) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -88,13 +81,22 @@ export async function PUT(
     if (role !== undefined) updateData.role = role;
 
     if (password) {
-      // Update password in Supabase Auth
-      const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(id, {
-        password,
-      });
-      if (authError) {
-        console.error('Auth password update error:', authError);
+      const { data: existingUser, error: lookupError } = await supabaseAdmin
+        .from('users')
+        .select('clerk_user_id')
+        .eq('id', id)
+        .single();
+
+      if (lookupError) throw lookupError;
+      if (!existingUser.clerk_user_id) {
+        return NextResponse.json(
+          { success: false, error: 'This user has not linked a Clerk account yet' },
+          { status: 409 }
+        );
       }
+
+      const client = await clerkClient();
+      await client.users.updateUser(existingUser.clerk_user_id, { password });
     }
 
     const { data: user, error } = await supabaseAdmin
@@ -131,10 +133,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    const userSession = session?.user as AuthUser | undefined;
+    const admin = await getAuthenticatedAdmin();
     
-    if (!session || userSession?.role !== 'admin') {
+    if (!admin) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -144,7 +145,7 @@ export async function DELETE(
     const { id } = await params;
 
     // Prevent admin from deleting themselves
-    if (userSession?.id && id === userSession.id) {
+    if (id === admin.id) {
       return NextResponse.json(
         { success: false, error: 'Cannot delete your own account' },
         { status: 400 }
@@ -153,10 +154,17 @@ export async function DELETE(
 
     const supabaseAdmin = createSupabaseAdminClient();
 
-    // Delete from Supabase Auth
-    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id);
-    if (authError) {
-      console.error('Auth delete error:', authError);
+    const { data: existingUser, error: lookupError } = await supabaseAdmin
+      .from('users')
+      .select('clerk_user_id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (lookupError) throw lookupError;
+
+    if (existingUser?.clerk_user_id) {
+      const client = await clerkClient();
+      await client.users.deleteUser(existingUser.clerk_user_id);
     }
 
     // Delete from users table (cascade will handle related data)
