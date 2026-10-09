@@ -3,7 +3,7 @@ import { siteConfig } from "@/lib/seo/config";
 
 export const metadata: Metadata = {
   title: "Shop All Furniture",
-  description: "Browse our complete collection of premium furniture. Filter by category, price, style, and more. Free shipping on orders over $500.",
+  description: "Browse our complete collection of premium furniture. Filter by category, price, style, and more. Free shipping on orders over ₦500.",
   keywords: [
     "shop furniture",
     "buy furniture online",

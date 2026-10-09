@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Mail, ArrowRight, CheckCircle } from 'lucide-react';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 export function Newsletter() {
   const [email, setEmail] = useState('');
@@ -136,20 +137,16 @@ export function Newsletter() {
                       disabled={status === 'submitting'}
                       className="w-full pl-12 pr-12 py-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:opacity-50"
                     />
-                    <button
+                    <LoadingButton
                       type="submit"
-                      disabled={status === 'submitting' || !email}
+                      disabled={!email}
+                      loading={status === 'submitting'}
+                      loadingText=""
+                      spinnerClassName="h-4 w-4"
                       className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                      {status === 'submitting' ? (
-                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                        </svg>
-                      ) : (
-                        <ArrowRight className="w-4 h-4" />
-                      )}
-                    </button>
+                      {status === 'submitting' ? null : <ArrowRight className="w-4 h-4" />}
+                    </LoadingButton>
                   </div>
                   <p className="text-xs text-gray-500 text-center">
                     By subscribing, you agree to our{' '}

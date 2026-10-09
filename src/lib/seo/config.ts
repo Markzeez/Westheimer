@@ -21,7 +21,7 @@ export const siteConfig = {
   },
   priceRange: "$$",
   paymentMethods: ["Visa", "Mastercard", "American Express", "PayPal", "Apple Pay"],
-  currencies: ["USD"],
+  currencies: ["NGN"],
   languages: ["en-US"],
 };
 

@@ -8,6 +8,7 @@ import { ChevronRight, ChevronLeft, Check, Sparkles, Home, CreditCard, Bell, Use
 import { useUser } from '@clerk/nextjs';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 const STEPS = [
   { id: 'welcome', title: 'Welcome', icon: Sparkles, description: 'Tell us about your style' },
@@ -38,10 +39,10 @@ const ROOM_OPTIONS = [
 ];
 
 const BUDGET_RANGES = [
-  { id: 'under-1k', label: 'Under $1,000', description: 'Budget-friendly finds' },
-  { id: '1k-5k', label: '$1,000 - $5,000', description: 'Quality pieces for key rooms' },
-  { id: '5k-15k', label: '$5,000 - $15,000', description: 'Full room makeovers' },
-  { id: '15k-plus', label: '$15,000+', description: 'Whole home transformation' },
+  { id: 'under-1k', label: 'Under ₦1,000', description: 'Budget-friendly finds' },
+  { id: '1k-5k', label: '₦1,000 - ₦5,000', description: 'Quality pieces for key rooms' },
+  { id: '5k-15k', label: '₦5,000 - ₦15,000', description: 'Full room makeovers' },
+  { id: '15k-plus', label: '₦15,000+', description: 'Whole home transformation' },
 ];
 
 function OnboardingPageContent() {
@@ -476,37 +477,25 @@ function OnboardingPageContent() {
             </button>
 
             <div className="flex items-center gap-3">
-              <button
+              <LoadingButton
                 onClick={handleSkip}
-                disabled={isLoading}
+                loading={isLoading}
+                loadingText="Skipping..."
                 className="px-6 py-3 text-gray-500 bg-white border border-gray-300 rounded-xl font-medium hover:bg-gray-50 disabled:opacity-50"
               >
                 Skip for now
-              </button>
+              </LoadingButton>
 
               {currentStep === STEPS.length - 1 ? (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <LoadingButton
                   onClick={handleComplete}
-                  disabled={isLoading}
-                  className="px-8 py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2"
+                  loading={isLoading}
+                  loadingText="Completing..."
+                  className="px-8 py-3 bg-primary-600 text-white rounded-xl font-semibold hover:bg-primary-700 disabled:opacity-50 flex items-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  {isLoading ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Completing...
-                    </>
-                  ) : (
-                    <>
-                      Complete Setup
-                      <ArrowRight className="w-5 h-5" />
-                    </>
-                  )}
-                </motion.button>
+                  Complete Setup
+                  <ArrowRight className="w-5 h-5" />
+                </LoadingButton>
               ) : (
                 <motion.button
                   whileHover={{ scale: 1.02 }}

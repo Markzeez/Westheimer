@@ -30,6 +30,11 @@ export interface OrderData {
   payment_method: string;
   payment_id?: string;
   user_id: string;
+  payment?: {
+    status: string;
+    method: string;
+    provider_reference: string | null;
+  } | null;
 }
 
 async function getOrder(
@@ -42,7 +47,8 @@ async function getOrder(
     .from('orders')
     .select(`
       *,
-      items:order_items(*)
+      items:order_items(*),
+      payment:payments!fk_orders_payment_id(status, method, provider_reference)
     `)
     .eq('id', id);
 
@@ -53,7 +59,14 @@ async function getOrder(
   const { data, error } = await query.single();
 
   if (error || !data) return null;
-  return data as OrderData;
+  const payment = Array.isArray(data.payment) ? data.payment[0] : data.payment;
+  if (data.payment_id && payment?.status !== 'completed') return null;
+  return {
+    ...data,
+    payment_method: payment?.method ?? data.payment_method ?? '—',
+    payment_id: payment?.provider_reference ?? undefined,
+    payment,
+  } as OrderData;
 }
 
 export async function generateMetadata({

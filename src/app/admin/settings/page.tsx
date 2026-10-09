@@ -325,10 +325,10 @@ export default function AdminSettingsPage() {
 
                     <select
                       id="currency"
-                      defaultValue="USD"
+                      defaultValue="NGN"
                       className="w-full rounded-lg border border-gray-300 px-3 py-2.5 outline-none transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                     >
-                      <option value="USD">USD ($)</option>
+                      <option value="NGN">NGN (₦)</option>
                       <option value="EUR">EUR (€)</option>
                       <option value="GBP">GBP (£)</option>
                       <option value="NGN">NGN (₦)</option>

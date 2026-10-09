@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { ProductImageCarousel } from '@/components/ui/ProductImageCarousel';
+import { formatPrice } from '@/lib/currency';
 
 interface Product {
   id: string;
@@ -28,10 +29,6 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
     if (inventory === 0) return 'out-of-stock';
     if (inventory <= 10) return 'low-stock';
     return 'in-stock';
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
   };
 
   if (variant === 'compact') {

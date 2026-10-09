@@ -72,7 +72,7 @@ export function generateProductMetadata(product: Product): Metadata {
     },
     other: {
       "product:price:amount": price,
-      "product:price:currency": "USD",
+      "product:price:currency": "NGN",
       "product:availability": product.inventory > 0 ? "in stock" : "out of stock",
       "product:condition": "new",
       "product:brand": siteConfig.name,

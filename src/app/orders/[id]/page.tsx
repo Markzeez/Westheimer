@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { ChevronLeft, Truck, MapPin, CreditCard, Clock, CheckCircle, Package,  AlertCircle, Printer } from 'lucide-react';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
+import { formatPrice } from '@/lib/currency';
 
 interface Order {
   _id: string;
@@ -76,10 +77,6 @@ export default function OrderDetailPage() {
 
     fetchOrder();
   }, [orderId, router, fetchOrder]);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
-  };
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });

@@ -51,7 +51,7 @@ const faqSections = [
       {
         question: 'How much does shipping cost?',
         answer:
-          'Standard shipping is free on orders over $500. Delivery options and any applicable charges are shown during checkout.',
+          'Standard shipping is free on orders over ₦500. Delivery options and any applicable charges are shown during checkout.',
       },
       {
         question: 'When will my order arrive?',

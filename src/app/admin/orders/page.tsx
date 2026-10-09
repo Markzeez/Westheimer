@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Download } from 'lucide-react';
 import { StatusBadge, ActionButtons, DataTable, AdminLayout } from '@/components/admin/AdminLayout';
+import { formatPrice } from '@/lib/currency';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 interface OrderItem {
   productId: string;
@@ -87,7 +89,7 @@ export default function AdminOrdersPage() {
     { key: 'id', header: 'Order', render: (o: Order) => <div><p className="font-mono font-medium">#{o._id.slice(-8).toUpperCase()}</p><p className="text-xs text-gray-500">{new Date(o.createdAt).toLocaleDateString()}</p></div> },
     { key: 'customer', header: 'Customer', render: (o: Order) => { const u = typeof o.userId === 'object' ? o.userId : { name: 'Unknown', email: '' }; return <div><p className="font-medium">{u.name}</p><p className="text-xs text-gray-500">{u.email}</p></div>; } },
     { key: 'items', header: 'Items', render: (o: Order) => <span className="text-sm text-gray-500">{o.items.reduce((s, i) => s + i.quantity, 0)} item(s)</span> },
-    { key: 'total', header: 'Total', render: (o: Order) => <span className="font-medium text-gray-900">${o.total.toFixed(2)}</span> },
+    { key: 'total', header: 'Total', render: (o: Order) => <span className="font-medium text-gray-900">{formatPrice(o.total)}</span> },
     { key: 'status', header: 'Status', render: (o: Order) => <StatusBadge status={o.status} /> },
   ];
 
@@ -153,7 +155,7 @@ export default function AdminOrdersPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Total</label>
-                    <p className="text-sm font-medium text-gray-900">${selectedOrder.total.toFixed(2)}</p>
+                    <p className="text-sm font-medium text-gray-900">{formatPrice(selectedOrder.total)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">New Status</label>
@@ -172,7 +174,14 @@ export default function AdminOrdersPage() {
                 </div>
                 <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
                   <button onClick={() => setShowStatusModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">Cancel</button>
-                  <button disabled={isUpdating} onClick={handleStatusUpdate} className="px-6 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50">{isUpdating ? 'Updating...' : 'Update Status'}</button>
+                  <LoadingButton
+                    loading={isUpdating}
+                    loadingText="Updating..."
+                    onClick={handleStatusUpdate}
+                    className="flex items-center gap-2 rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50"
+                  >
+                    Update Status
+                  </LoadingButton>
                 </div>
               </motion.div>
             </motion.div>

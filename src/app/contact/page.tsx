@@ -12,6 +12,7 @@ import { Footer } from '@/component/Footer';
 import Link from "next/link";
 import { AnimatePresence } from "framer-motion";
 import { ChevronRight } from "lucide-react";
+import { LoadingButton } from '@/components/ui/loading-button';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -35,7 +36,7 @@ const subjects = [
 const faqs = [
   {
     q: 'What is your shipping policy?',
-    a: 'We offer free shipping on orders over $500. Standard shipping takes 5-7 business days. White-glove delivery (in-home setup) is available for an additional fee.',
+    a: 'We offer free shipping on orders over ₦500. Standard shipping takes 5-7 business days. White-glove delivery (in-home setup) is available for an additional fee.',
   },
   {
     q: 'What is your return policy?',
@@ -117,7 +118,7 @@ export default function ContactPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-16">
               {[
-                { icon: Truck, title: 'Free Shipping', desc: 'On orders $500+', link: '/shipping' },
+                { icon: Truck, title: 'Free Shipping', desc: 'On orders ₦500+', link: '/shipping' },
                 { icon: RotateCcw, title: 'Easy Returns', desc: '100-day trial', link: '/returns' },
                 { icon: Shield, title: 'Warranty', desc: 'Lifetime on frames', link: '/warranty' },
                 { icon: Clock, title: 'Track Order', desc: 'Real-time updates', link: '/track-order' },
@@ -307,14 +308,15 @@ export default function ContactPage() {
                         )}
                       </div>
 
-                      <button
+                      <LoadingButton
                         type="submit"
-                        disabled={isSubmitting}
+                        loading={isSubmitting}
+                        loadingText="Sending..."
                         className="w-full py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 disabled:opacity-50 flex items-center justify-center gap-2"
                       >
                         <Send className="w-5 h-5" />
-                        {isSubmitting ? 'Sending...' : 'Send Message'}
-                      </button>
+                        Send Message
+                      </LoadingButton>
                     </motion.form>
                   ) : (
                     <motion.div

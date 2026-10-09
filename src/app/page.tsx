@@ -11,7 +11,7 @@ import { generateWebsiteSchema, generateLocalBusinessSchema } from "@/lib/seo/st
 
 export const metadata: Metadata = {
   title: "Premium Furniture for Modern Living",
-  description: "Discover premium furniture for your home. Sofas, tables, chairs, and more with free shipping on orders over $500. Handcrafted quality, sustainable materials.",
+  description: "Discover premium furniture for your home. Sofas, tables, chairs, and more with free shipping on orders over ₦500. Handcrafted quality, sustainable materials.",
   keywords: [
     "furniture",
     "home decor",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Westheimer Designs - Premium Furniture for Modern Living",
-    description: "Discover premium furniture for your home. Sofas, tables, chairs, and more with free shipping on orders over $500.",
+    description: "Discover premium furniture for your home. Sofas, tables, chairs, and more with free shipping on orders over ₦500.",
     url: siteConfig.url,
     siteName: siteConfig.name,
     type: "website",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Westheimer Designs - Premium Furniture for Modern Living",
-    description: "Discover premium furniture for your home. Free shipping on orders over $500.",
+    description: "Discover premium furniture for your home. Free shipping on orders over ₦500.",
     images: [siteConfig.ogImage],
     creator: "@westheimerdesigns",
   },

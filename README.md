@@ -9,7 +9,7 @@ A complete Next.js 15 furniture e-commerce application with admin dashboard, bui
 - **Product Details** - 3-image carousel with thumbnails & fullscreen view
 - **Shopping Cart** - Persistent cart with drawer (Zustand + localStorage + Supabase sync)
 - **Wishlist** - Save items for later
-- **Checkout** - 3-step process (Shipping → Payment → Review)
+- **Checkout** - Shipping details followed by secure Paystack-hosted NGN payment
 - **Printable Receipts** - Professional receipts after payment
 - **User Accounts** - Profile, order history, wishlist, settings
 - **Order Tracking** - Timeline with status updates
@@ -73,6 +73,7 @@ npm run dev
    - Execute in Supabase SQL Editor
 4. Apply `supabase/migrations/20261009063646_clerk_identity_mapping.sql` before starting the app. This preserves existing profile UUIDs and order references while enabling Clerk identity links.
 5. Keep the Supabase service-role key server-side; authenticated database operations are performed by server routes after Clerk authorization.
+6. Apply `supabase/migrations/20261009080108_add_paystack_payment.sql` before enabling checkout. It adds the NGN payment currency and the server-only, idempotent payment settlement function.
 
 ### Clerk Setup
 
@@ -80,6 +81,13 @@ npm run dev
 2. Add `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` to `.env.local` and your deployment environment.
 3. Existing Supabase profiles are linked to Clerk on first sign-in when the verified primary email matches. New accounts receive a profile with the default `user` role.
 4. Admin authorization continues to use the server-side `role` field in `public.users`; do not grant admin access through user-editable Clerk metadata.
+
+### Paystack Setup
+
+1. Add `PAYSTACK_SECRET_KEY` to `.env.local` and your deployment's server-side environment. Use a Paystack test secret key for testing; never expose it as a `NEXT_PUBLIC_` variable.
+2. Configure the Paystack webhook URL as `https://your-domain.example/api/payments/webhook`.
+3. Checkout uses NGN and treats existing product price values as naira. Paystack receives amounts in kobo; the server recalculates order totals from the database and verifies transactions before marking orders paid.
+4. Set `NEXT_PUBLIC_SITE_URL` to the canonical HTTPS site URL in production so Paystack returns to the correct callback.
 
 ### Cloudinary Setup (Recommended)
 
@@ -109,6 +117,10 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 # Clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
 CLERK_SECRET_KEY=your-clerk-secret-key
+
+# Paystack (server-side only)
+PAYSTACK_SECRET_KEY=your-paystack-secret-key
+NEXT_PUBLIC_SITE_URL=https://your-domain.example
 
 # Cloudinary (for production image uploads)
 CLOUDINARY_CLOUD_NAME=your-cloud-name

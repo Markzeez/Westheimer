@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { ProductImageCarousel } from '@/components/ui/ProductImageCarousel';
 import { StatusBadge } from '@/components/admin/AdminLayout';
+import { formatPrice } from '@/lib/currency';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 interface ProductImage {
   url: string;
@@ -94,6 +96,7 @@ export default function AdminProductsPage() {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
   const [newFeature, setNewFeature] = useState('');
 
   const fetchProducts = useCallback(async () => {
@@ -215,6 +218,8 @@ export default function AdminProductsPage() {
   };
 
   const handleDelete = async (productId: string) => {
+    if (deletingProductId) return;
+    setDeletingProductId(productId);
     try {
       const res = await fetch(`/api/products/${productId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed');
@@ -222,6 +227,8 @@ export default function AdminProductsPage() {
       fetchProducts();
     } catch {
       alert('Failed to delete product');
+    } finally {
+      setDeletingProductId(null);
     }
   };
 
@@ -427,7 +434,7 @@ export default function AdminProductsPage() {
                     {product.category.replace('-', ' ')}
                   </p>
                   <div className="mt-3 flex items-center justify-between">
-                    <p className="text-lg font-bold text-gray-900">${product.price.toFixed(2)}</p>
+                    <p className="text-lg font-bold text-gray-900">{formatPrice(product.price)}</p>
                     <StatusBadge status={getStockStatus(product.inventory)} />
                   </div>
                   <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
@@ -824,13 +831,14 @@ export default function AdminProductsPage() {
                 >
                   Cancel
                 </button>
-                <button
+                <LoadingButton
                   onClick={handleSubmit}
-                  disabled={isSubmitting}
+                  loading={isSubmitting}
+                  loadingText="Saving..."
                   className="px-6 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : editingProduct ? 'Update Product' : 'Create Product'}
-                </button>
+                  {editingProduct ? 'Update Product' : 'Create Product'}
+                </LoadingButton>
               </div>
             </motion.div>
           </motion.div>
@@ -872,7 +880,7 @@ export default function AdminProductsPage() {
                       {previewProduct.category.replace('-', ' ')}
                     </p>
                     <p className="text-3xl font-bold text-black">
-                      ${previewProduct.price.toFixed(2)}
+                      {formatPrice(previewProduct.price)}
                     </p>
                     <div className="flex items-center gap-2">
                       <StatusBadge status={getStockStatus(previewProduct.inventory)} />
@@ -948,12 +956,14 @@ export default function AdminProductsPage() {
                   >
                     Cancel
                   </button>
-                  <button
+                  <LoadingButton
                     onClick={() => handleDelete(deleteConfirm)}
-                    className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
+                    loading={deletingProductId === deleteConfirm}
+                    loadingText="Deleting..."
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
                   >
                     Delete
-                  </button>
+                  </LoadingButton>
                 </div>
               </div>
             </motion.div>

@@ -51,7 +51,7 @@ const milestones = [
 ];
 
 const promises = [
-  { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500, delivered to your room of choice' },
+  { icon: Truck, title: 'Free Shipping', desc: 'On orders over ₦500, delivered to your room of choice' },
   { icon: Shield, title: 'Lifetime Warranty', desc: 'Frames guaranteed for life, 5 years on cushions' },
   { icon: RotateCcw, title: '100-Day Trial', desc: 'Live with it. Love it. Or return it, no questions.' },
 ];

@@ -14,11 +14,11 @@ const categories = [
 ];
 
 const priceRanges = [
-  { value: '0-100', label: 'Under $100' },
-  { value: '100-300', label: '$100 - $300' },
-  { value: '300-500', label: '$300 - $500' },
-  { value: '500-1000', label: '$500 - $1,000' },
-  { value: '1000-', label: '$1,000+' },
+  { value: '0-100', label: 'Under ₦100' },
+  { value: '100-300', label: '₦100 - ₦300' },
+  { value: '300-500', label: '₦300 - ₦500' },
+  { value: '500-1000', label: '₦500 - ₦1,000' },
+  { value: '1000-', label: '₦1,000+' },
 ];
 
 const sortOptions = [

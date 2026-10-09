@@ -16,7 +16,6 @@ import {
   Bell,
   X,
   Save,
-  Loader2,
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,6 +23,8 @@ import { z } from 'zod';
 import { toast } from '@/components/ToastProvider';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
+import { formatPrice } from '@/lib/currency';
+import { LoadingButton, Spinner } from '@/components/ui/loading-button';
 
 const profileSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -400,13 +401,6 @@ export default function AccountPage() {
     toast.error('Account deletion is not implemented yet.');
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price);
-  };
-
   const formatDate = (date: string) => {
     const parsedDate = new Date(date);
 
@@ -483,7 +477,7 @@ export default function AccountPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-black" />
+          <Spinner className="h-8 w-8 text-black" />
           <p className="text-sm text-gray-500">Loading your account...</p>
         </div>
       </div>
@@ -734,23 +728,15 @@ export default function AccountPage() {
                           />
                         </div>
 
-                        <button
+                        <LoadingButton
                           type="submit"
-                          disabled={saving}
+                          loading={saving}
+                          loadingText="Saving..."
                           className="flex items-center gap-2 rounded-xl bg-primary-600 px-6 py-3 font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          {saving ? (
-                            <>
-                              <Loader2 className="h-5 w-5 animate-spin" />
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <Save className="h-5 w-5" />
-                              Save Changes
-                            </>
-                          )}
-                        </button>
+                          <Save className="h-5 w-5" />
+                          Save Changes
+                        </LoadingButton>
                       </form>
                     </div>
 
@@ -850,15 +836,15 @@ export default function AccountPage() {
                           )}
                         </div>
 
-                        <button
+                        <LoadingButton
                           type="submit"
-                          disabled={saving}
+                          loading={saving}
+                          loadingText="Updating..."
                           className="flex items-center gap-2 rounded-xl bg-gray-900 px-6 py-3 font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <Shield className="h-5 w-5" />
-
-                          {saving ? 'Updating...' : 'Update Password'}
-                        </button>
+                          Update Password
+                        </LoadingButton>
                       </form>
                     </div>
                   </motion.div>
@@ -875,7 +861,7 @@ export default function AccountPage() {
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                       {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-16">
-                          <Loader2 className="mb-4 h-8 w-8 animate-spin text-black" />
+                          <Spinner className="mb-4 h-8 w-8 text-black" />
                           <p className="text-sm text-gray-500">
                             Loading orders...
                           </p>

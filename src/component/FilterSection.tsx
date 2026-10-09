@@ -159,9 +159,9 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                 }
               >
                 <option value="">Price</option>
-                <option value="0-25">$0 - $25</option>
-                <option value="25-50">$25 - $50</option>
-                <option value="50-100">$50 - $100</option>
+                <option value="0-25">₦0 - ₦25</option>
+                <option value="25-50">₦25 - ₦50</option>
+                <option value="50-100">₦50 - ₦100</option>
               </select>
               <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             </div>

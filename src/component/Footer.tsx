@@ -45,7 +45,7 @@ const socialLinks = [
 ];
 
 // const features = [
-//   { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500' },
+//   { icon: Truck, title: 'Free Shipping', desc: 'On orders over ₦500' },
 //   { icon: Shield, title: 'Secure Payment', desc: '100% secure checkout' },
 //   { icon: RotateCcw, title: 'Easy Returns', desc: '30-day return policy' },
 //   { icon: Headphones, title: '24/7 Support', desc: 'Dedicated customer care' },

@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  DollarSign, ShoppingCart, Users, TrendingUp, Calendar} from 'lucide-react';
+  Banknote, ShoppingCart, Users, TrendingUp, Calendar} from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, Legend, AreaChart, Area
 } from 'recharts';
 import { AdminLayout, StatCard } from '@/components/admin/AdminLayout';
+import { formatPrice } from '@/lib/currency';
 
 interface AnalyticsData {
   totalRevenue: number;
@@ -119,9 +120,9 @@ export default function AdminAnalyticsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Revenue"
-            value={`$${data.totalRevenue.toLocaleString()}`}
+            value={formatPrice(data.totalRevenue)}
             change={12.5}
-            icon={<DollarSign className="w-6 h-6" />}
+            icon={<Banknote className="w-6 h-6" />}
             iconColor="text-green-600"
             bgColor="bg-green-100"
           />
@@ -143,7 +144,7 @@ export default function AdminAnalyticsPage() {
           />
           <StatCard
             title="Avg Order Value"
-            value={`$${data.avgOrderValue.toFixed(2)}`}
+            value={formatPrice(data.avgOrderValue)}
             change={3.1}
             icon={<TrendingUp className="w-6 h-6" />}
             iconColor="text-orange-600"
@@ -171,10 +172,10 @@ export default function AdminAnalyticsPage() {
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                   <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
-                  <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
+                  <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `₦${(v/1000).toFixed(0)}k`} />
                   <Tooltip
                     contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                    formatter={(value: number) => [formatPrice(value), 'Revenue']}
                   />
                   <Area
                     type="monotone"
@@ -235,9 +236,9 @@ export default function AdminAnalyticsPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.topProducts} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis type="number" stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
+                  <XAxis type="number" stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `₦${(v/1000).toFixed(0)}k`} />
                   <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={12} width={120} />
-                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} formatter={(v: number) => [`$${v.toLocaleString()}`, 'Revenue']} />
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} formatter={(v: number) => [formatPrice(v), 'Revenue']} />
                   <Bar dataKey="revenue" fill="#6366f1" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -306,8 +307,8 @@ export default function AdminAnalyticsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">{product.sales}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">${product.revenue.toLocaleString()}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">${(product.revenue / product.sales).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatPrice(product.revenue)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{formatPrice(product.revenue / product.sales)}</td>
                     </tr>
                   ))}
                 </tbody>

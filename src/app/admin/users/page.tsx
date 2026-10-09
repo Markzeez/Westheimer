@@ -10,6 +10,7 @@ import {
   DataTable,
   AdminLayout,
 } from '@/components/admin/AdminLayout';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 interface AdminUser {
   _id: string;
@@ -66,6 +67,7 @@ export default function AdminUsersPage() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   /**
    * Fetch users
@@ -293,8 +295,9 @@ export default function AdminUsersPage() {
    * Delete user
    */
   const handleDelete = async (userId: string) => {
-    if (!userId) return;
+    if (!userId || deletingUserId) return;
 
+    setDeletingUserId(userId);
     try {
       const response = await fetch(
         `/api/admin/users/${userId}`,
@@ -336,6 +339,8 @@ export default function AdminUsersPage() {
           ? error.message
           : 'Failed to delete user'
       );
+    } finally {
+      setDeletingUserId(null);
     }
   };
 
@@ -710,17 +715,14 @@ export default function AdminUsersPage() {
                       Cancel
                     </button>
 
-                    <button
+                    <LoadingButton
                       type="submit"
-                      disabled={isSubmitting}
+                      loading={isSubmitting}
+                      loadingText="Saving..."
                       className="rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {isSubmitting
-                        ? 'Saving...'
-                        : editingUser
-                        ? 'Update User'
-                        : 'Create User'}
-                    </button>
+                      {editingUser ? 'Update User' : 'Create User'}
+                    </LoadingButton>
                   </div>
                 </form>
               </motion.div>
@@ -782,15 +784,17 @@ export default function AdminUsersPage() {
                       Cancel
                     </button>
 
-                    <button
+                    <LoadingButton
                       type="button"
                       onClick={() =>
                         void handleDelete(deleteConfirm)
                       }
-                      className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700"
+                      loading={deletingUserId === deleteConfirm}
+                      loadingText="Deleting..."
+                      className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700 disabled:opacity-50"
                     >
                       Delete
-                    </button>
+                    </LoadingButton>
                   </div>
                 </div>
               </motion.div>

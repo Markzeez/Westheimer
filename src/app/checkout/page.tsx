@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronRight, Check, CreditCard, Truck, Shield, Lock } from 'lucide-react';
+import { ChevronRight, Check, Truck, Shield, Lock } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,6 +13,8 @@ import { useCartStore } from '@/stores/cartStore';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
 import { toast } from '@/components/ToastProvider';
+import { calculateOrderTotals, formatPrice } from '@/lib/currency';
+import { LoadingButton } from '@/components/ui/loading-button';
 
 const shippingSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -27,25 +28,15 @@ const shippingSchema = z.object({
   country: z.string().min(1, 'Country is required'),
 });
 
-const paymentSchema = z.object({
-  cardName: z.string().min(1, 'Name on card is required'),
-  cardNumber: z.string().min(16, 'Invalid card number'),
-  expiry: z.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, 'Invalid expiry (MM/YY)'),
-  cvv: z.string().min(3, 'Invalid CVV'),
-});
-
 type ShippingForm = z.infer<typeof shippingSchema>;
-type PaymentForm = z.infer<typeof paymentSchema>;
 
 const steps = [
   { id: 'shipping', label: 'Shipping', icon: Truck },
-  { id: 'payment', label: 'Payment', icon: CreditCard },
   { id: 'review', label: 'Review', icon: Shield },
 ];
 
 export default function CheckoutPage() {
-  const router = useRouter();
-  const { items, getSubtotal, clearCart } = useCartStore();
+  const { items, getSubtotal } = useCartStore();
   const [currentStep, setCurrentStep] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -60,27 +51,21 @@ export default function CheckoutPage() {
       city: '',
       state: '',
       zipCode: '',
-      country: 'USA',
+      country: 'Nigeria',
     },
   });
 
-  const paymentForm = useForm<PaymentForm>({
-    resolver: zodResolver(paymentSchema),
-    defaultValues: {
-      cardName: '',
-      cardNumber: '',
-      expiry: '',
-      cvv: '',
-    },
-  });
+  const { shipping, tax, total } = calculateOrderTotals(getSubtotal());
+  const [paymentMessage, setPaymentMessage] = useState('');
 
-  const shipping = getSubtotal() >= 500 ? 0 : 15;
-  const tax = getSubtotal() * 0.08;
-  const total = getSubtotal() + shipping + tax;
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
-  };
+  useEffect(() => {
+    const paymentResult = new URLSearchParams(window.location.search).get('payment');
+    if (paymentResult === 'failed') {
+      setPaymentMessage('Payment was not completed. Your cart is still available to try again.');
+    } else if (paymentResult === 'review') {
+      setPaymentMessage('Your payment needs review. Please contact support before trying again.');
+    }
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -100,29 +85,37 @@ export default function CheckoutPage() {
     setCurrentStep(1);
   };
 
-  const handlePaymentSubmit = async () => {
-    setCurrentStep(2);
-  };
-
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
     try {
-      // In real app: call API to create order
-      // const res = await fetch('/api/orders', { method: 'POST', body: JSON.stringify({...}) });
-      // const order = await res.json();
-      
-      // Simulate order creation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const orderId = `ORD-${Date.now().toString(36).toUpperCase()}`;
-      clearCart();
-      
-      toast.success('Order placed successfully!');
-      // Redirect to receipt page for printing
-      router.push(`/orders/${orderId}/receipt`);
-    } catch {
-      toast.error('Failed to place order. Please try again.');
-    } finally {
+      const shippingValues = shippingForm.getValues();
+      const response = await fetch('/api/payments/initialize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          })),
+          email: shippingValues.email,
+          shippingAddress: {
+            name: `${shippingValues.firstName} ${shippingValues.lastName}`,
+            address: shippingValues.address,
+            city: shippingValues.city,
+            state: shippingValues.state,
+            zip_code: shippingValues.zipCode,
+            country: shippingValues.country,
+            phone: shippingValues.phone,
+          },
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || typeof result.authorizationUrl !== 'string') {
+        throw new Error(result.error || 'Unable to start payment');
+      }
+      window.location.assign(result.authorizationUrl);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to start payment');
       setIsProcessing(false);
     }
   };
@@ -133,6 +126,11 @@ export default function CheckoutPage() {
       
       <main className="pt-8 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {paymentMessage && (
+            <p role="alert" className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
+              {paymentMessage}
+            </p>
+          )}
           {/* Progress Steps */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
@@ -257,90 +255,8 @@ export default function CheckoutPage() {
                   </motion.form>
                 )}
 
-                {/* Step 2: Payment */}
+                {/* Step 2: Review */}
                 {currentStep === 1 && (
-                  <motion.form
-                    key="payment"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    onSubmit={paymentForm.handleSubmit(handlePaymentSubmit)}
-                    className="space-y-6"
-                  >
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                      <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                        <CreditCard className="w-5 h-5 text-black" />
-                        Payment Details
-                      </h2>
-
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Name on Card *</label>
-                          <input {...paymentForm.register('cardName')} className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500" />
-                          {paymentForm.formState.errors.cardName && (
-                            <p className="text-sm text-red-500 mt-1">{paymentForm.formState.errors.cardName.message}</p>
-                          )}
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Card Number *</label>
-                          <input
-                            {...paymentForm.register('cardNumber')}
-                            placeholder="1234 5678 9012 3456"
-                            maxLength={19}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 font-mono"
-                          />
-                          {paymentForm.formState.errors.cardNumber && (
-                            <p className="text-sm text-red-500 mt-1">{paymentForm.formState.errors.cardNumber.message}</p>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Expiry (MM/YY) *</label>
-                            <input
-                              {...paymentForm.register('expiry')}
-                              placeholder="MM/YY"
-                              maxLength={5}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500"
-                            />
-                            {paymentForm.formState.errors.expiry && (
-                              <p className="text-sm text-red-500 mt-1">{paymentForm.formState.errors.expiry.message}</p>
-                            )}
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">CVV *</label>
-                            <input
-                              {...paymentForm.register('cvv')}
-                              type="password"
-                              placeholder="123"
-                              maxLength={4}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500"
-                            />
-                            {paymentForm.formState.errors.cvv && (
-                              <p className="text-sm text-red-500 mt-1">{paymentForm.formState.errors.cvv.message}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4">
-                      <button
-                        type="button"
-                        onClick={() => setCurrentStep(0)}
-                        className="flex-1 py-3 bg-white text-gray-700 font-semibold rounded-xl border border-gray-300 hover:bg-gray-50 transition-colors"
-                      >
-                        Back
-                      </button>
-                      <button type="submit" className="flex-1 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors flex items-center justify-center gap-2">
-                        Continue to Review
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </motion.form>
-                )}
-
-                {/* Step 3: Review */}
-                {currentStep === 2 && (
                   <motion.div
                     key="review"
                     initial={{ opacity: 0, x: 20 }}
@@ -368,9 +284,7 @@ export default function CheckoutPage() {
 
                       <div className="space-y-4 mb-6">
                         <h3 className="font-medium text-gray-900">Payment Method</h3>
-                        <p className="text-gray-600">
-                          Ending in {paymentForm.watch('cardNumber').slice(-4)}
-                        </p>
+                        <p className="text-gray-600">Secure online payment with Paystack (NGN)</p>
                       </div>
 
                       <div className="space-y-4">
@@ -393,28 +307,19 @@ export default function CheckoutPage() {
                     <div className="flex gap-4">
                       <button
                         type="button"
-                        onClick={() => setCurrentStep(1)}
+                        onClick={() => setCurrentStep(0)}
                         className="flex-1 py-3 bg-white text-gray-700 font-semibold rounded-xl border border-gray-300 hover:bg-gray-50 transition-colors"
                       >
                         Back
                       </button>
-                      <button
+                      <LoadingButton
                         onClick={handlePlaceOrder}
-                        disabled={isProcessing}
+                        loading={isProcessing}
+                        loadingText="Processing..."
                         className="flex-1 py-3 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                       >
-                        {isProcessing ? (
-                          <>
-                            <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
-                            Processing...
-                          </>
-                        ) : (
-                          'Place Order'
-                        )}
-                      </button>
+                        Place Order
+                      </LoadingButton>
                     </div>
                   </motion.div>
                 )}

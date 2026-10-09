@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCartStore } from '@/stores/cartStore';
 import { useWishlistStore } from '@/stores/cartStore';
+import { calculateOrderTotals, formatPrice } from '@/lib/currency';
 
 
 export function CartDrawer() {
@@ -14,9 +15,7 @@ export function CartDrawer() {
 
   if (!isOpen) return null;
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
-  };
+  const { shipping, tax, total } = calculateOrderTotals(getSubtotal());
 
   return (
     <>
@@ -136,16 +135,16 @@ export function CartDrawer() {
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Shipping</span>
                 <span className="font-medium text-gray-900">
-                  {getSubtotal() >= 500 ? 'Free' : formatPrice(15)}
+                  {shipping === 0 ? 'Free' : formatPrice(shipping)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Estimated Tax</span>
-                <span className="font-medium text-gray-900">{formatPrice(getSubtotal() * 0.08)}</span>
+                <span className="font-medium text-gray-900">{formatPrice(tax)}</span>
               </div>
               <div className="border-t border-gray-200 pt-3 flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>{formatPrice(getSubtotal() + (getSubtotal() >= 500 ? 0 : 15) + getSubtotal() * 0.08)}</span>
+                <span>{formatPrice(total)}</span>
               </div>
               
               <Link

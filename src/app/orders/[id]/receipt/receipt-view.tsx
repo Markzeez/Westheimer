@@ -2,10 +2,7 @@
 
 import { useEffect } from 'react';
 import type { OrderData } from './page';
-
-function formatPrice(price: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
-}
+import { calculateOrderTotals, formatPrice } from '@/lib/currency';
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString('en-US', {
@@ -24,9 +21,9 @@ interface ReceiptViewProps {
 }
 
 export default function ReceiptView({ order, id, userEmail }: ReceiptViewProps) {
-  const shipping = order.total >= 500 ? 0 : 15;
-  const tax = order.total * 0.08;
-  const grandTotal = order.total + shipping + tax;
+  const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const { shipping, tax, total: calculatedTotal } = calculateOrderTotals(subtotal);
+  const grandTotal = order.payment?.method === 'paystack' ? order.total : calculatedTotal;
 
   useEffect(() => {
     window.print();
@@ -280,7 +277,7 @@ export default function ReceiptView({ order, id, userEmail }: ReceiptViewProps) 
               <tbody>
                 <tr>
                   <td className="label">Subtotal ({order.items.reduce((sum, i) => sum + i.quantity, 0)} items)</td>
-                  <td className="value">{formatPrice(order.total)}</td>
+                  <td className="value">{formatPrice(subtotal)}</td>
                 </tr>
                 <tr>
                   <td className="label">Shipping</td>

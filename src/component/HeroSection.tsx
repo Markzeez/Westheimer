@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { ChevronRight, Shield, Truck, RotateCcw, Star, Package } from 'lucide-react';
 
 const features = [
-  { icon: Truck, title: 'Free Shipping', desc: 'On orders over $500' },
+  { icon: Truck, title: 'Free Shipping', desc: 'On orders over ₦500' },
   { icon: Shield, title: 'Secure Payment', desc: '100% secure checkout' },
   { icon: RotateCcw, title: 'Easy Returns', desc: '30-day return policy' },
   { icon: Star, title: 'Premium Quality', desc: 'Handcrafted excellence' },
@@ -109,7 +109,7 @@ export function HeroSection() {
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">Free Delivery</p>
-                  <p className="text-sm text-gray-500">On orders $500+</p>
+                  <p className="text-sm text-gray-500">On orders ₦500+</p>
                 </div>
               </div>
             </motion.div>

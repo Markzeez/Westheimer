@@ -7,13 +7,10 @@ import { Heart, X, ShoppingBag, Eye, Trash2, Package } from 'lucide-react';
 import { useWishlistStore } from '@/stores/cartStore';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
+import { formatPrice } from '@/lib/currency';
 
 export default function WishlistPage() {
   const { items, removeItem, clearWishlist } = useWishlistStore();
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">

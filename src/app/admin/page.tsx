@@ -6,7 +6,7 @@ import {
   Users,
   Package,
   ShoppingCart,
-  DollarSign,
+  Banknote,
   AlertTriangle,
   CheckCircle
 } from 'lucide-react';
@@ -27,6 +27,7 @@ import {
 } from 'recharts';
 import Link from 'next/link';
 import { StatCard, StatusBadge } from '@/components/admin/AdminLayout';
+import { formatPrice } from '@/lib/currency';
 
 interface Order {
   _id: string;
@@ -137,9 +138,9 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Revenue"
-          value={`$${data.totalRevenue.toLocaleString()}`}
+          value={formatPrice(data.totalRevenue)}
           change={12.5}
-          icon={<DollarSign className="w-6 h-6" />}
+          icon={<Banknote className="w-6 h-6" />}
           iconColor="text-green-600"
           bgColor="bg-green-100"
           href="/admin/analytics"
@@ -200,7 +201,7 @@ export default function AdminDashboard() {
                     border: '1px solid #e2e8f0',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                   }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                  formatter={(value: number) => [formatPrice(value), 'Revenue']}
                 />
                 <Area
                   type="monotone"
@@ -301,7 +302,7 @@ export default function AdminDashboard() {
                       {order.userId?.name || 'Unknown'}
                     </td>
                     <td className="py-3 text-sm font-medium text-gray-900">
-                      ${order.total.toLocaleString()}
+                      {formatPrice(order.total)}
                     </td>
                     <td className="py-3">
                       <StatusBadge status={order.status} />
@@ -393,7 +394,7 @@ export default function AdminDashboard() {
                     border: '1px solid #e2e8f0',
                   }}
                   formatter={(value: number, name: string) => {
-                    if (name === 'revenue') return [`$${value.toLocaleString()}`, 'Revenue'];
+                    if (name === 'revenue') return [formatPrice(value), 'Revenue'];
                     return [value, 'Units Sold'];
                   }}
                 />

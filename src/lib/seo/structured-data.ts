@@ -97,7 +97,7 @@ export function generateProductSchema(product: Product): object {
   const offers = {
     "@type": "Offer",
     url: `${siteConfig.url}/products/${product.id}`,
-    priceCurrency: "USD",
+    priceCurrency: "NGN",
     price: product.price.toFixed(2),
     availability: product.inventory > 0 
       ? "https://schema.org/InStock" 
@@ -184,7 +184,7 @@ export function generateProductListSchema(products: Product[]): object {
           : undefined,
         offers: {
           "@type": "Offer",
-          priceCurrency: "USD",
+          priceCurrency: "NGN",
           price: product.price.toFixed(2),
           availability: product.inventory > 0 
             ? "https://schema.org/InStock" 

@@ -11,6 +11,7 @@ import {
   generateBreadcrumbSchema,
 } from "@/lib/seo";
 import { createSupabaseServerClient } from "@/lib/supabase";
+import { formatPrice } from "@/lib/currency";
 import type { Product } from "@/types";
 
 interface ProductPageProps {
@@ -362,7 +363,7 @@ export default async function ProductDetailPage({
 
               {/* Price */}
               <div className="mb-6 text-3xl font-bold text-gray-900">
-                ${product.price.toFixed(2)}
+                {formatPrice(product.price)}
               </div>
 
               {/* Description */}

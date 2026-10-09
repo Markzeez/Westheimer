@@ -8,19 +8,14 @@ import { useCartStore } from '@/stores/cartStore';
 import { useWishlistStore } from '@/stores/cartStore';
 import { Header } from '@/component/Header';
 import { Footer } from '@/component/Footer';
+import { calculateOrderTotals, formatPrice } from '@/lib/currency';
 
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, getSubtotal, getTotalItems, closeCart } = useCartStore();
   const { toggleItem, isInWishlist } = useWishlistStore();
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
-  };
-
-  const shipping = getSubtotal() >= 500 ? 0 : 15;
-  const tax = getSubtotal() * 0.08;
-  const total = getSubtotal() + shipping + tax;
+  const { shipping, tax, total } = calculateOrderTotals(getSubtotal());
 
   return (
     <div className="min-h-screen bg-gray-50">
